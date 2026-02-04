@@ -5,11 +5,11 @@ import { useParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import { categories } from '@/data/categories';
 import { products } from '@/data/products';
-import ProductCard from '@/components/ProductCard';
+import ProductCard from '@/components/user/ProductCard';
 
 export default function CategoryPage() {
   const params = useParams();
-  const categoryId = parseInt(params.categoryId);
+  const categoryId = parseInt(params.id);
   const [categoryProducts, setCategoryProducts] = useState([]);
   const [category, setCategory] = useState(null);
 
@@ -34,7 +34,7 @@ export default function CategoryPage() {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-12"
+          className="mb-8 text-center"
         >
           <h1 className="text-4xl font-bold mb-4">{category.name} Steering Wheels</h1>
           <p className="text-gray-400">{categoryProducts.length} products available</p>
@@ -52,6 +52,12 @@ export default function CategoryPage() {
             </motion.div>
           ))}
         </div>
+
+        {categoryProducts.length === 0 && (
+          <div className="text-center py-12">
+            <p className="text-gray-400">No products found in this category.</p>
+          </div>
+        )}
       </div>
     </div>
   );

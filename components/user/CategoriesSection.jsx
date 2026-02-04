@@ -21,7 +21,7 @@ export default function CategoriesSection() {
           <p className="text-gray-400">Find the perfect steering wheel for your vehicle</p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
           {categories.map((category, index) => (
             <motion.div
               key={category.id}

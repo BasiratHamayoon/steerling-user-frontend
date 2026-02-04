@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { categories } from '@/data/categories';
-import CategoryCard from '@/components/CategoryCard';
+import CategoryCard from '@/components/user/CategoryCard';
 
 export default function CategoriesPage() {
   return (

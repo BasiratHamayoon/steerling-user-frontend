@@ -1,15 +1,5 @@
-import HeroSection from '@/components/HeroSection';
-import CategoriesSection from '@/components/CategoriesSection';
-import ProductsSection from '@/components/ProductsSection';
-import WhatsAppButton from '@/components/WhatsAppButton';
+import { redirect } from 'next/navigation';
 
-export default function Home() {
-  return (
-    <>
-      <HeroSection />
-      <CategoriesSection />
-      <ProductsSection />
-      <WhatsAppButton />
-    </>
-  );
+export default function RootPage() {
+  redirect('/user');
 }

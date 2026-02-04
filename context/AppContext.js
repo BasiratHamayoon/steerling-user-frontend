@@ -1,4 +1,4 @@
-'use client'; // Add this at the top
+'use client';
 
 import { createContext, useContext, useState } from 'react';
 
@@ -8,6 +8,7 @@ export function AppProvider({ children }) {
   const [searchQuery, setSearchQuery] = useState('');
   const [cart, setCart] = useState([]);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isAdminLoginOpen, setIsAdminLoginOpen] = useState(false);
 
   const addToCart = (product) => {
     setCart([...cart, product]);
@@ -22,6 +23,8 @@ export function AppProvider({ children }) {
         addToCart,
         isSearchOpen,
         setIsSearchOpen,
+        isAdminLoginOpen,
+        setIsAdminLoginOpen,
       }}
     >
       {children}
