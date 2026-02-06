@@ -8,13 +8,13 @@ const heroSlides = [
     id: 1,
     image: '/1.png',  
     heading: 'Premium Steering Wheels Collection',
-    greenWords: [0, 1], // "Premium", "Steering" in green
+    blueWords: [0, 1], // "Premium", "Steering" in blue
   },
   {
     id: 2,
     image: '/2.png',
     heading: 'Ultimate Racing Experience For You',
-    greenWords: [0, 2], // "Ultimate", "Experience" in green
+    blueWords: [0, 2], // "Ultimate", "Experience" in blue
   },
 ];
 
@@ -30,13 +30,13 @@ export default function HeroSection() {
     return () => clearInterval(interval);
   }, []);
 
-  const renderHeading = (heading, greenWordIndices) => {
+  const renderHeading = (heading, blueWordIndices) => {
     const words = heading.split(' ');
     
     return words.map((word, index) => (
       <span
         key={index}
-        className={`${greenWordIndices.includes(index) ? 'text-green-400' : 'text-white'} ${index > 0 ? 'ml-2' : ''}`}
+        className={`${blueWordIndices.includes(index) ? 'text-[#0295E6]' : 'text-white'} ${index > 0 ? 'ml-2' : ''}`}
       >
         {word}
       </span>
@@ -79,23 +79,23 @@ export default function HeroSection() {
             <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-black/30" />
           </div>
           
-          <div className="relative h-full flex items-center justify-center px-4">
+          <div className="relative h-full flex items-center justify-center px-4 sm:px-6 md:px-8">
             <motion.div
               initial={{ y: 50, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.5, duration: 0.7 }}
-              className="text-center"
+              className="text-center max-w-6xl w-full mx-auto px-2 sm:px-4"
             >
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6">
+              <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6 flex flex-wrap justify-center gap-x-2 gap-y-2">
                 {renderHeading(
                   heroSlides[currentSlide].heading, 
-                  heroSlides[currentSlide].greenWords
+                  heroSlides[currentSlide].blueWords
                 )}
               </h1>
               
-              <div className="w-32 h-1 bg-green-500/60 mx-auto rounded-full mb-8 animate-pulse-glow" />
+              <div className="w-32 h-1 bg-[#0295E6]/60 mx-auto rounded-full mb-6 sm:mb-8 animate-pulse-glow" />
               
-              <p className="text-lg text-gray-300 font-medium">
+              <p className="text-base sm:text-lg md:text-xl text-gray-300 font-medium px-2">
                 Drive in Style & Comfort
               </p>
             </motion.div>

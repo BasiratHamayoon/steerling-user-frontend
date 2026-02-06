@@ -16,7 +16,7 @@ const contactSlides = [
   { id: 3, text: 'Email: info@steerflux.com', icon: <FaEnvelope /> },
 ];
 
-export default function UserHeader() {
+export default function Header() {
   const pathname = usePathname();
   const params = useParams();
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -53,7 +53,7 @@ export default function UserHeader() {
   return (
     <>
       <header className={`sticky top-0 z-50 transition-all duration-300 ${isScrolled ? 'bg-gray-900/95 backdrop-blur-md shadow-lg' : 'bg-gray-900'} border-b border-gray-700`}>
-        <div className="bg-gradient-to-r from-green-600 to-emerald-600 py-2 overflow-hidden">
+        <div className="bg-[#0295E6] py-2 overflow-hidden">
           <AnimatePresence mode="wait">
             <motion.div
               key={currentSlide}
@@ -73,7 +73,7 @@ export default function UserHeader() {
           <div className="flex items-center justify-between">
             {/* Added outline-none to Logo */}
             <Link href={`/${currentUser}`} className="text-2xl font-bold outline-none focus:outline-none">
-              <span className="text-green-400">Steer</span>
+              <span className="text-[#0295E6]">Steer</span>
               <span className="text-white">Flux</span>
             </Link>
 
@@ -85,8 +85,8 @@ export default function UserHeader() {
                   // Added outline-none and focus:outline-none here
                   className={`transition-colors outline-none focus:outline-none ${
                     pathname === item.href 
-                      ? 'text-green-400 font-semibold' 
-                      : 'text-gray-300 hover:text-green-400'
+                      ? 'text-[#0295E6] font-semibold' 
+                      : 'text-gray-300 hover:text-[#0295E6]'
                   }`}
                 >
                   {item.name}
@@ -132,9 +132,9 @@ export default function UserHeader() {
                       // Added outline-none here as well for mobile menu
                       className={`py-2 outline-none focus:outline-none ${
                         pathname === item.href 
-                          ? 'text-green-400 font-semibold' 
+                          ? 'text-[#0295E6] font-semibold' 
                           : 'text-gray-300'
-                      } hover:text-green-400 transition-colors`}
+                      } hover:text-[#0295E6] transition-colors`}
                       onClick={() => setIsMenuOpen(false)}
                     >
                       {item.name}

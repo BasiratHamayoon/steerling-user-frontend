@@ -9,7 +9,7 @@ export default function ProductCard({ product }) {
     <motion.div
       whileHover={{ y: -5 }}
       whileTap={{ scale: 0.98 }}
-      className="bg-gray-900/50 rounded-xl overflow-hidden border border-gray-700/50 hover:border-green-500/30 transition-all duration-300"
+      className="bg-gray-900/50 rounded-xl overflow-hidden border border-gray-700/50 hover:border-[#0295E6]/30 transition-all duration-300"
     >
       <Link href={`/products/${product.id}`}>
         <div className="h-48 overflow-hidden relative">
@@ -30,14 +30,14 @@ export default function ProductCard({ product }) {
       
       <div className="p-4">
         <Link href={`/products/${product.id}`}>
-          <h3 className="font-semibold text-lg mb-2 hover:text-green-400 transition-colors line-clamp-1">
+          <h3 className="font-semibold text-lg mb-2 hover:text-[#0295E6] transition-colors line-clamp-1">
             {product.name}
           </h3>
         </Link>
         
         <div className="flex items-center justify-between mb-3">
-          <span className="text-2xl font-bold text-green-400">${product.price}</span>
-          <span className={`px-3 py-1 rounded-full text-xs font-medium ${product.inStock ? 'bg-green-900/30 text-green-300' : 'bg-red-900/30 text-red-300'}`}>
+          <span className="text-2xl font-bold text-[#0295E6]">${product.price}</span>
+          <span className={`px-3 py-1 rounded-full text-xs font-medium ${product.inStock ? 'bg-[#0295E6]/30 text-[#0295E6]' : 'bg-red-900/30 text-red-300'}`}>
             {product.inStock ? 'In Stock' : 'Out of Stock'}
           </span>
         </div>

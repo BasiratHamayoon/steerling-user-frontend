@@ -69,7 +69,7 @@ export default function ProductDetailPage() {
                 <button
                   key={index}
                   onClick={() => setSelectedImage(index)}
-                  className={`w-16 h-16 rounded-lg overflow-hidden border transition-all ${selectedImage === index ? 'border-green-500 scale-105' : 'border-gray-700/50 hover:border-gray-600'}`}
+                  className={`w-16 h-16 rounded-lg overflow-hidden border transition-all ${selectedImage === index ? 'border-[#0295E6] scale-105' : 'border-gray-700/50 hover:border-gray-600'}`}
                 >
                   <img src={img} alt={`View ${index + 1}`} className="w-full h-full object-cover" />
                 </button>
@@ -81,8 +81,8 @@ export default function ProductDetailPage() {
             <div>
               <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
               <div className="flex items-center justify-between mb-4">
-                <span className="text-2xl font-bold text-green-400">${product.price}</span>
-                <span className={`px-4 py-2 rounded-full text-sm font-medium ${product.inStock ? 'bg-green-900/30 text-green-300' : 'bg-red-900/30 text-red-300'}`}>
+                <span className="text-2xl font-bold text-[#0295E6]">${product.price}</span>
+                <span className={`px-4 py-2 rounded-full text-sm font-medium ${product.inStock ? 'bg-[#0295E6]/30 text-[#0295E6]' : 'bg-red-900/30 text-red-300'}`}>
                   {product.inStock ? 'In Stock' : 'Out of Stock'}
                 </span>
               </div>

@@ -45,7 +45,7 @@ export default function ProductsSection() {
         >
           <Link
             href="/products"
-            className="btn-primary inline-flex items-center gap-2"
+            className="inline-flex items-center gap-2 bg-[#0295E6] hover:bg-[#0275c6] text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105"
           >
             View All Products
           </Link>

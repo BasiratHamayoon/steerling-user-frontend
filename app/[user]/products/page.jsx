@@ -140,7 +140,7 @@ export default function ProductsPage() {
                   <button
                     key={pageNum}
                     onClick={() => setCurrentPage(pageNum)}
-                    className={`w-10 h-10 rounded-lg transition-all ${currentPage === pageNum ? 'bg-green-600 text-white' : 'bg-gray-800 hover:bg-gray-700'}`}
+                    className={`w-10 h-10 rounded-lg transition-all ${currentPage === pageNum ? 'bg-[#0295E6] text-white' : 'bg-gray-800 hover:bg-gray-700'}`}
                   >
                     {pageNum}
                   </button>

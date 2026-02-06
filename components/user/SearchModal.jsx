@@ -61,7 +61,7 @@ export default function SearchModal() {
               <input
                 type="text"
                 placeholder="Search for steering wheels, categories, etc..."
-                className="w-full pl-12 pr-4 py-3.5 bg-gray-800/50 rounded-xl border border-gray-600 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/30 text-white"
+                className="w-full pl-12 pr-4 py-3.5 bg-gray-800/50 rounded-xl border border-gray-600 focus:border-[#0295E6] focus:outline-none focus:ring-2 focus:ring-[#0295E6]/30 text-white"
                 value={searchQuery}
                 onChange={(e) => handleSearch(e.target.value)}
                 autoFocus
@@ -95,7 +95,7 @@ export default function SearchModal() {
                         <p className="text-sm text-gray-400">${product.price}</p>
                         <p className="text-xs text-gray-500">{product.category}</p>
                       </div>
-                      <div className={`px-2 py-1 rounded text-xs ${product.inStock ? 'bg-green-900/30 text-green-300' : 'bg-red-900/30 text-red-300'}`}>
+                      <div className={`px-2 py-1 rounded text-xs ${product.inStock ? 'bg-[#0295E6]/30 text-[#0295E6]' : 'bg-red-900/30 text-red-300'}`}>
                         {product.inStock ? 'In Stock' : 'Out of Stock'}
                       </div>
                     </motion.div>
