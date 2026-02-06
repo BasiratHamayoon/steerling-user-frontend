@@ -2,22 +2,44 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaUser, FaLock, FaTimes, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaUser, FaLock, FaTimes, FaEye, FaEyeSlash, FaCogs } from 'react-icons/fa';
+import { useRouter } from 'next/navigation';
 import { useAppContext } from '@/context/AppContext';
 
 export default function AdminLoginModal() {
   const { isAdminLoginOpen, setIsAdminLoginOpen } = useAppContext();
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     username: '',
     password: ''
   });
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Handle admin login logic here
-    alert('Admin login feature will be implemented soon!');
-    setIsAdminLoginOpen(false);
+    setError('');
+    setIsLoading(true);
+
+    // Simple authentication (in real app, this would be an API call)
+    setTimeout(() => {
+      if (formData.username === 'admin' && formData.password === 'admin123') {
+        // Store authentication in localStorage
+        localStorage.setItem('adminAuth', 'true');
+        localStorage.setItem('adminUser', JSON.stringify({
+          username: formData.username,
+          name: 'Administrator',
+          email: 'admin@steerflux.com'
+        }));
+        
+        setIsAdminLoginOpen(false);
+        router.push('/admin/dashboard');
+      } else {
+        setError('Invalid username or password');
+        setIsLoading(false);
+      }
+    }, 1000);
   };
 
   const handleChange = (e) => {
@@ -55,8 +77,8 @@ export default function AdminLoginModal() {
             </button>
 
             <div className="text-center mb-6">
-              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-green-600 to-emerald-600 rounded-full flex items-center justify-center">
-                <FaUser className="text-2xl text-white" />
+              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-[#0295E6] to-[#0275c6] rounded-full flex items-center justify-center">
+                <FaCogs className="text-2xl text-white" />
               </div>
               <h3 className="text-2xl font-bold mb-2">Admin Login</h3>
               <p className="text-gray-400">Access the admin dashboard</p>
@@ -73,7 +95,7 @@ export default function AdminLoginModal() {
                     value={formData.username}
                     onChange={handleChange}
                     required
-                    className="w-full pl-12 pr-4 py-3 bg-gray-800/50 rounded-xl border border-gray-700 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/30"
+                    className="w-full pl-12 pr-4 py-3 bg-gray-800/50 rounded-xl border border-gray-700 focus:border-[#0295E6] focus:outline-none focus:ring-2 focus:ring-[#0295E6]/30"
                     placeholder="Enter username"
                   />
                 </div>
@@ -89,7 +111,7 @@ export default function AdminLoginModal() {
                     value={formData.password}
                     onChange={handleChange}
                     required
-                    className="w-full pl-12 pr-12 py-3 bg-gray-800/50 rounded-xl border border-gray-700 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/30"
+                    className="w-full pl-12 pr-12 py-3 bg-gray-800/50 rounded-xl border border-gray-700 focus:border-[#0295E6] focus:outline-none focus:ring-2 focus:ring-[#0295E6]/30"
                     placeholder="Enter password"
                   />
                   <button
@@ -102,17 +124,26 @@ export default function AdminLoginModal() {
                 </div>
               </div>
 
+              {error && (
+                <div className="p-3 bg-red-900/30 border border-red-700/50 rounded-lg">
+                  <p className="text-red-300 text-sm">{error}</p>
+                </div>
+              )}
+
               <button
                 type="submit"
-                className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105"
+                disabled={isLoading}
+                className="w-full bg-gradient-to-r from-[#0295E6] to-[#0275c6] hover:from-[#0284d6] hover:to-[#0265b6] text-white py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Login
+                {isLoading ? 'Logging in...' : 'Login'}
               </button>
             </form>
 
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-400">
-                Contact support if you've forgotten your credentials
+                Demo Credentials:<br />
+                Username: <span className="text-[#0295E6]">admin</span><br />
+                Password: <span className="text-[#0295E6]">admin123</span>
               </p>
             </div>
           </motion.div>

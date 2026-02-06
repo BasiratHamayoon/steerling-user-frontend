@@ -16,7 +16,7 @@
   --font-mono: var(--font-geist-mono);
   
   /* Custom colors */
-  --color-green-400: var(--primary-green);
+  --color-[#0295E6]: var(--primary-green);
   --color-green-500: var(--primary-green);
   --color-green-600: var(--primary-green-dark);
   
@@ -121,11 +121,11 @@
 }
 
 @utility active-nav {
-  @apply text-green-400 border-b-2 border-green-400 pb-1;
+  @apply text-[#0295E6] border-b-2 border-[#0295E6] pb-1;
 }
 
 @utility text-gradient {
-  @apply bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent;
+  @apply bg-gradient-to-r from-[#0295E6] to-emerald-500 bg-clip-text text-transparent;
 }
 
 @utility shadow-glow {
@@ -168,18 +168,6 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #4b5563;
-}
-
-/* Selection styling */
-::selection {
-  background-color: rgba(16, 185, 129, 0.3);
-  color: white;
-}
-
-/* Focus styles */
-*:focus {
-  outline: 2px solid rgba(16, 185, 129, 0.5);
-  outline-offset: 2px;
 }
 
 /* Smooth transitions */

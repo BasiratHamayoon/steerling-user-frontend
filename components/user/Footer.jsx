@@ -9,7 +9,7 @@ export default function Footer() {
           {/* Logo and Thank You */}
           <div className="text-center">
             <div className="text-2xl font-bold mb-4">
-              <span className="text-green-400">Steer</span>
+              <span className="text-[#0295E6]">Steer</span>
               <span className="text-white">Flux</span>
             </div>
             <p className="text-gray-400">Thank you for visiting our store. Premium steering wheels for every vehicle.</p>
@@ -19,8 +19,8 @@ export default function Footer() {
           <div className="text-center">
             <div className="flex flex-col items-center space-y-2">
               <div className="flex items-center gap-2">
-                <FaWhatsapp className="text-green-400" />
-                <a href={`https://wa.me/${contactInfo.whatsapp}`} className="hover:text-green-400 transition-colors">
+                <FaWhatsapp className="text-[#0295E6]" />
+                <a href={`https://wa.me/${contactInfo.whatsapp}`} className="hover:text-[#0295E6] transition-colors">
                   WhatsApp: {contactInfo.whatsapp}
                 </a>
               </div>

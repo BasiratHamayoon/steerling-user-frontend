@@ -36,7 +36,7 @@ export default function OrderModal({ isOpen, onClose, product, quantity }) {
 
             <div className="text-center mb-6">
               <h3 className="text-2xl font-bold mb-2">Complete Your Order</h3>
-              <div className="flex items-center justify-center gap-2 text-green-400">
+              <div className="flex items-center justify-center gap-2 text-[#0295E6]">
                 <FaTruck />
                 <span>Cash on Delivery Available</span>
               </div>
@@ -55,7 +55,7 @@ export default function OrderModal({ isOpen, onClose, product, quantity }) {
                   <h4 className="font-semibold">{product?.name}</h4>
                   <p className="text-sm text-gray-400">Model: {product?.model}</p>
                   <div className="flex items-center gap-2 mt-1">
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${product?.inStock ? 'bg-green-900/30 text-green-300' : 'bg-red-900/30 text-red-300'}`}>
+                    <span className={`px-2 py-1 rounded text-xs font-medium ${product?.inStock ? 'bg-[#0295E6]/30 text-[#0295E6]' : 'bg-red-900/30 text-red-300'}`}>
                       {product?.inStock ? 'In Stock' : 'Out of Stock'}
                     </span>
                   </div>
@@ -73,7 +73,7 @@ export default function OrderModal({ isOpen, onClose, product, quantity }) {
                 </div>
                 <div className="flex justify-between border-t border-gray-700 pt-2">
                   <span className="font-semibold">Total Amount:</span>
-                  <span className="text-2xl font-bold text-green-400">${totalAmount}</span>
+                  <span className="text-2xl font-bold text-[#0295E6]">${totalAmount}</span>
                 </div>
               </div>
             </div>

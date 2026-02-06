@@ -36,7 +36,7 @@ export default function Filters({ onFilterChange, productsPerRow, setProductsPer
 
   const sortOptions = [
     { value: 'featured', label: 'Featured', icon: <FaFire className="text-orange-500" /> },
-    { value: 'price-low', label: 'Price: Low to High', icon: <FaSortAmountDown className="text-green-500" /> },
+    { value: 'price-low', label: 'Price: Low to High', icon: <FaSortAmountDown className="text-[#0295E6]" /> },
     { value: 'price-high', label: 'Price: High to Low', icon: <FaSortAmountUp className="text-red-500" /> },
     { value: 'name', label: 'Name A-Z', icon: <FaSortAlphaDown className="text-blue-500" /> },
   ];
@@ -81,7 +81,7 @@ export default function Filters({ onFilterChange, productsPerRow, setProductsPer
         <div className="flex flex-col gap-6 w-full lg:w-auto">
           
           {/* Header */}
-          <div className="flex items-center gap-2 text-green-500 mb-2">
+          <div className="flex items-center gap-2 text-[#0295E6] mb-2">
             <FaFilter className="text-sm" />
             <span className="text-sm font-semibold uppercase tracking-wider">Filter & Sort</span>
           </div>
@@ -93,12 +93,12 @@ export default function Filters({ onFilterChange, productsPerRow, setProductsPer
               <span className="text-xs text-gray-500 uppercase tracking-wide">Availability</span>
               <div 
                 onClick={() => toggleDropdown('availability')}
-                className={`${triggerStyle} ${activeDropdown === 'availability' ? 'border-green-500' : ''}`}
+                className={`${triggerStyle} ${activeDropdown === 'availability' ? 'border-[#0295E6]' : ''}`}
               >
                 <span className="truncate">
                   {availabilityOptions.find(o => o.value === availability)?.label}
                 </span>
-                <FaChevronDown className={`text-[10px] text-gray-500 transition-transform ${activeDropdown === 'availability' ? 'rotate-180 text-green-500' : ''}`} />
+                <FaChevronDown className={`text-[10px] text-gray-500 transition-transform ${activeDropdown === 'availability' ? 'rotate-180 text-[#0295E6]' : ''}`} />
               </div>
 
               <AnimatePresence>
@@ -118,7 +118,7 @@ export default function Filters({ onFilterChange, productsPerRow, setProductsPer
                         className={`
                           px-4 py-3 text-sm cursor-pointer flex items-center justify-between
                           hover:bg-gray-800 transition-colors
-                          ${availability === option.value ? 'text-green-500 bg-gray-800/50' : 'text-gray-300'}
+                          ${availability === option.value ? 'text-[#0295E6] bg-gray-800/50' : 'text-gray-300'}
                         `}
                       >
                         {option.label}
@@ -137,12 +137,12 @@ export default function Filters({ onFilterChange, productsPerRow, setProductsPer
               {/* Trigger */}
               <div 
                 onClick={() => toggleDropdown('price')}
-                className={`${triggerStyle} ${activeDropdown === 'price' ? 'border-green-500' : ''}`}
+                className={`${triggerStyle} ${activeDropdown === 'price' ? 'border-[#0295E6]' : ''}`}
               >
                 <span className="truncate font-mono text-gray-300">
                   ${priceRange.min} - ${priceRange.max}
                 </span>
-                <FaChevronDown className={`text-[10px] text-gray-500 transition-transform ${activeDropdown === 'price' ? 'rotate-180 text-green-500' : ''}`} />
+                <FaChevronDown className={`text-[10px] text-gray-500 transition-transform ${activeDropdown === 'price' ? 'rotate-180 text-[#0295E6]' : ''}`} />
               </div>
 
               {/* Popover Content */}
@@ -162,7 +162,7 @@ export default function Filters({ onFilterChange, productsPerRow, setProductsPer
                             type="number"
                             value={priceRange.min}
                             onChange={(e) => setPriceRange({ ...priceRange, min: parseInt(e.target.value) || 0 })}
-                            className="w-full bg-gray-800 border border-gray-700 rounded-lg py-2 pl-6 pr-2 text-sm text-white focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all"
+                            className="w-full bg-gray-800 border border-gray-700 rounded-lg py-2 pl-6 pr-2 text-sm text-white focus:outline-none focus:border-[#0295E6] focus:ring-1 focus:ring-[#0295E6] transition-all"
                           />
                         </div>
                       </div>
@@ -175,7 +175,7 @@ export default function Filters({ onFilterChange, productsPerRow, setProductsPer
                             type="number"
                             value={priceRange.max}
                             onChange={(e) => setPriceRange({ ...priceRange, max: parseInt(e.target.value) || 1000 })}
-                            className="w-full bg-gray-800 border border-gray-700 rounded-lg py-2 pl-6 pr-2 text-sm text-white focus:outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all"
+                            className="w-full bg-gray-800 border border-gray-700 rounded-lg py-2 pl-6 pr-2 text-sm text-white focus:outline-none focus:border-[#0295E6] focus:ring-1 focus:ring-[#0295E6] transition-all"
                           />
                         </div>
                       </div>
@@ -190,7 +190,7 @@ export default function Filters({ onFilterChange, productsPerRow, setProductsPer
               <span className="text-xs text-gray-500 uppercase tracking-wide">Sort By</span>
               <div 
                 onClick={() => toggleDropdown('sort')}
-                className={`${triggerStyle} ${activeDropdown === 'sort' ? 'border-green-500' : ''}`}
+                className={`${triggerStyle} ${activeDropdown === 'sort' ? 'border-[#0295E6]' : ''}`}
               >
                 <div className="flex items-center gap-2 overflow-hidden">
                   <span className="text-gray-400">
@@ -200,7 +200,7 @@ export default function Filters({ onFilterChange, productsPerRow, setProductsPer
                     {sortOptions.find(o => o.value === sortBy)?.label}
                   </span>
                 </div>
-                <FaChevronDown className={`text-[10px] text-gray-500 transition-transform ${activeDropdown === 'sort' ? 'rotate-180 text-green-500' : ''}`} />
+                <FaChevronDown className={`text-[10px] text-gray-500 transition-transform ${activeDropdown === 'sort' ? 'rotate-180 text-[#0295E6]' : ''}`} />
               </div>
 
               <AnimatePresence>
@@ -226,10 +226,10 @@ export default function Filters({ onFilterChange, productsPerRow, setProductsPer
                         <span className={`${sortBy === option.value ? 'opacity-100' : 'opacity-70'}`}>
                           {option.icon}
                         </span>
-                        <span className={`flex-1 ${sortBy === option.value ? 'text-green-500 font-medium' : 'text-gray-300'}`}>
+                        <span className={`flex-1 ${sortBy === option.value ? 'text-[#0295E6] font-medium' : 'text-gray-300'}`}>
                           {option.label}
                         </span>
-                        {sortBy === option.value && <FaCheck className="text-xs text-green-500" />}
+                        {sortBy === option.value && <FaCheck className="text-xs text-[#0295E6]" />}
                       </div>
                     ))}
                   </motion.div>
@@ -250,7 +250,7 @@ export default function Filters({ onFilterChange, productsPerRow, setProductsPer
                 onClick={() => setProductsPerRow(option.value)}
                 className={`p-2 rounded-md transition-all duration-300 ${
                   productsPerRow === option.value 
-                    ? 'bg-gray-800 text-green-500 shadow-sm' 
+                    ? 'bg-gray-800 text-[#0295E6] shadow-sm' 
                     : 'text-gray-600 hover:text-gray-300'
                 }`}
                 title={option.label}

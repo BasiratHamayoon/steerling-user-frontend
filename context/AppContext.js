@@ -4,6 +4,7 @@ import { createContext, useContext, useState, useEffect, useCallback } from 'rea
 import authService from '@/services/authService';
 import categoryService from '@/services/categoryService';
 import productService from '@/services/productService';
+import messageService from '@/services/messageService';
 
 const AppContext = createContext();
 
@@ -29,6 +30,10 @@ export function AppProvider({ children }) {
   const [productsLoading, setProductsLoading] = useState(false);
   const [productsPagination, setProductsPagination] = useState(null);
 
+const [messages, setMessages] = useState([]);
+const [messagesLoading, setMessagesLoading] = useState(false);
+const [messagesPagination, setMessagesPagination] = useState(null);
+const [unreadMessagesCount, setUnreadMessagesCount] = useState(0);
   
   const [error, setError] = useState(null);
   const [notification, setNotification] = useState(null);
@@ -516,6 +521,147 @@ const fetchCategories = useCallback(async (params = {}) => {
     }
   };
 
+  const sendMessage = async (data) => {
+  try {
+    const response = await messageService.sendMessage(data);
+    if (response.success) {
+      showNotification('Message sent successfully!', 'success');
+    }
+    return response;
+  } catch (error) {
+    const message = error.response?.data?.message || 'Failed to send message';
+    showNotification(message, 'error');
+    return { success: false, error: message };
+  }
+};
+
+const fetchMessages = useCallback(async (params = {}) => {
+  try {
+    setMessagesLoading(true);
+    const response = await messageService.getAll(params);
+    
+    if (response.success) {
+      setMessages(response.data.messages);
+      setMessagesPagination(response.data.pagination);
+      setUnreadMessagesCount(response.data.unreadCount);
+    }
+    
+    return response;
+  } catch (error) {
+    const message = error.response?.data?.message || 'Failed to fetch messages';
+    setError(message);
+    return { success: false, error: message };
+  } finally {
+    setMessagesLoading(false);
+  }
+}, []);
+
+const fetchMessageById = async (id) => {
+  try {
+    setMessagesLoading(true);
+    const response = await messageService.getById(id);
+    return response;
+  } catch (error) {
+    const message = error.response?.data?.message || 'Message not found';
+    setError(message);
+    return { success: false, error: message };
+  } finally {
+    setMessagesLoading(false);
+  }
+};
+
+const replyToMessage = async (id, replyData) => {
+  try {
+    const response = await messageService.reply(id, replyData);
+    
+    if (response.success) {
+      setMessages(prev => prev.map(msg => 
+        msg._id === id ? response.data : msg
+      ));
+      showNotification(response.message, 'success');
+    }
+    
+    return response;
+  } catch (error) {
+    const message = error.response?.data?.message || 'Failed to send reply';
+    showNotification(message, 'error');
+    return { success: false, error: message };
+  }
+};
+
+const updateMessageStatus = async (id, status) => {
+  try {
+    const response = await messageService.updateStatus(id, status);
+    
+    if (response.success) {
+      setMessages(prev => prev.map(msg => 
+        msg._id === id ? response.data : msg
+      ));
+    }
+    
+    return response;
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+};
+
+const archiveMessage = async (id) => {
+  try {
+    const response = await messageService.toggleArchive(id);
+    
+    if (response.success) {
+      setMessages(prev => prev.filter(msg => msg._id !== id));
+      showNotification(response.message, 'success');
+    }
+    
+    return response;
+  } catch (error) {
+    showNotification('Failed to archive message', 'error');
+    return { success: false, error: error.message };
+  }
+};
+
+const deleteMessage = async (id) => {
+  try {
+    const response = await messageService.delete(id);
+    
+    if (response.success) {
+      setMessages(prev => prev.filter(msg => msg._id !== id));
+      showNotification('Message deleted successfully', 'success');
+    }
+    
+    return response;
+  } catch (error) {
+    showNotification('Failed to delete message', 'error');
+    return { success: false, error: error.message };
+  }
+};
+
+const bulkUpdateMessages = async (ids, action) => {
+  try {
+    const response = await messageService.bulkUpdate(ids, action);
+    
+    if (response.success) {
+      await fetchMessages();
+      showNotification(response.message, 'success');
+    }
+    
+    return response;
+  } catch (error) {
+    showNotification('Bulk action failed', 'error');
+    return { success: false, error: error.message };
+  }
+};
+
+const fetchMessageStats = async () => {
+  try {
+    const response = await messageService.getStats();
+    return response;
+  } catch (error) {
+    return { success: false, error: error.message };
+  }
+};
+
   
   const showNotification = (message, type = 'info') => {
     setNotification({ message, type });
@@ -583,6 +729,20 @@ const fetchCategories = useCallback(async (params = {}) => {
     showNotification,
     clearError,
     clearNotification,
+
+     messages,
+  messagesLoading,
+  messagesPagination,
+  unreadMessagesCount,
+  sendMessage,
+  fetchMessages,
+  fetchMessageById,
+  replyToMessage,
+  updateMessageStatus,
+  archiveMessage,
+  deleteMessage,
+  bulkUpdateMessages,
+  fetchMessageStats,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
