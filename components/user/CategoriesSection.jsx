@@ -1,54 +1,55 @@
 'use client';
 
+import { useEffect } from 'react';
 import { motion } from 'framer-motion';
-import Link from 'next/link';
-import { categories } from '@/data/categories';
-import CategoryCard from './CategoryCard';
+import { useAppContext } from '@/context/AppContext';
+import CategoryCard from '@/components/user/CategoryCard';
+import Loading from '@/components/ui/Loading';
 
-export default function CategoriesSection() {
+export default function CategoriesPage() {
+  const { categories, categoriesLoading, fetchCategories } = useAppContext();
+
+  useEffect(() => {
+    fetchCategories({ isActive: true });
+  }, [fetchCategories]);
+
+  if (categoriesLoading && categories.length === 0) {
+    return <Loading text="Loading categories..." />;
+  }
+
   return (
-    <section className="py-16 bg-gray-800">
+    <div className="py-12">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="text-3xl font-bold mb-4"
-          >
-            Shop by Categories
-          </motion.h2>
-          <p className="text-gray-400">Find the perfect steering wheel for your vehicle</p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {categories.map((category, index) => (
-            <motion.div
-              key={category.id}
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.1 }}
-            >
-              <CategoryCard category={category} />
-            </motion.div>
-          ))}
-        </div>
-
         <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          className="text-center mt-12"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center mb-12"
         >
-          <Link
-            href="/categories"
-            className="btn-primary inline-flex items-center gap-2"
-          >
-            View All Categories
-          </Link>
+          <h1 className="text-4xl font-bold mb-4">All Categories</h1>
+          <p className="text-gray-400">
+            Browse our wide range of steering wheel categories
+          </p>
         </motion.div>
+
+        {categories.length === 0 ? (
+          <div className="text-center py-12">
+            <p className="text-gray-400">No categories found.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            {categories.map((category, index) => (
+              <motion.div
+                key={category._id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <CategoryCard category={category} />
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
-    </section>
+    </div>
   );
 }
