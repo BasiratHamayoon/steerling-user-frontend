@@ -2,75 +2,67 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { motion } from 'framer-motion';
-import { products } from '@/data/products';
+import { useAppContext } from '@/context/AppContext';
 import ProductCard from '@/components/user/ProductCard';
 import Filters from '@/components/user/Filters';
 
 export default function ProductsPage() {
-  const [filteredProducts, setFilteredProducts] = useState(products);
+  const { 
+    products, 
+    fetchProducts, 
+    productsLoading, 
+    productsPagination 
+  } = useAppContext();
+
   const [currentPage, setCurrentPage] = useState(1);
   const [productsPerPage] = useState(24);
   const [productsPerRow, setProductsPerRow] = useState(4);
-  const [isClient, setIsClient] = useState(false);
+  const [filters, setFilters] = useState({
+    sortBy: 'featured',
+    availability: 'all',
+    priceRange: { min: 0, max: 10000 },
+    category: null
+  });
 
   useEffect(() => {
-    setIsClient(true);
+    fetchProducts({
+      page: currentPage,
+      limit: productsPerPage,
+      sort: filters.sortBy,
+      minPrice: filters.priceRange.min,
+      maxPrice: filters.priceRange.max,
+      inStock: filters.availability === 'in-stock' ? true : filters.availability === 'out-of-stock' ? false : undefined,
+      category: filters.category
+    });
+  }, [currentPage, productsPerPage, filters]);
+
+  const handleFilterChange = useCallback((newFilters) => {
+    setFilters(newFilters);
+    setCurrentPage(1); 
   }, []);
 
-  // Use useCallback to memoize the function and prevent infinite re-renders
-  const handleFilterChange = useCallback((filters) => {
-    let filtered = [...products];
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
-    if (filters.availability === 'in-stock') {
-      filtered = filtered.filter(p => p.inStock);
-    } else if (filters.availability === 'out-of-stock') {
-      filtered = filtered.filter(p => !p.inStock);
-    }
-
-    filtered = filtered.filter(p => 
-      p.price >= filters.priceRange.min && 
-      p.price <= filters.priceRange.max
-    );
-
-    switch (filters.sortBy) {
-      case 'price-low':
-        filtered.sort((a, b) => a.price - b.price);
-        break;
-      case 'price-high':
-        filtered.sort((a, b) => b.price - a.price);
-        break;
-      case 'featured':
-        // Keep default/featured order
-        break;
-      case 'name':
-        filtered.sort((a, b) => a.name.localeCompare(b.name));
-        break;
-      default:
-        break;
-    }
-
-    setFilteredProducts(filtered);
-    setCurrentPage(1);
-  }, []); // Empty dependency array since we don't use any external variables
-
-  const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
-  const indexOfLastProduct = currentPage * productsPerPage;
-  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-  const currentProducts = filteredProducts.slice(indexOfFirstProduct, indexOfLastProduct);
-
-  // Don't render anything on server to avoid hydration mismatch
-  if (!isClient) {
+  if (productsLoading && products.length === 0) {
     return (
       <div className="py-12">
         <div className="container mx-auto px-4">
           <div className="text-center">
             <h1 className="text-4xl md:text-5xl font-bold mb-4">All Products</h1>
-            <p className="text-gray-400">Loading...</p>
+            <p className="text-gray-400">Loading products...</p>
           </div>
         </div>
       </div>
     );
   }
+
+  const totalPages = productsPagination?.totalPages || 1;
+  const total = productsPagination?.total || 0;
+  const startIndex = (currentPage - 1) * productsPerPage + 1;
+  const endIndex = Math.min(currentPage * productsPerPage, total);
 
   return (
     <div className="py-12">
@@ -92,22 +84,36 @@ export default function ProductsPage() {
 
         <div className="mb-6 flex items-center justify-between">
           <div className="text-gray-400">
-            Showing {indexOfFirstProduct + 1}-{Math.min(indexOfLastProduct, filteredProducts.length)} of {filteredProducts.length} products
+            {total > 0 ? (
+              <>Showing {startIndex}-{endIndex} of {total} products</>
+            ) : (
+              'No products found'
+            )}
           </div>
         </div>
 
-        <div className={`grid grid-cols-1 ${productsPerRow >= 2 ? 'sm:grid-cols-2' : ''} ${productsPerRow >= 3 ? 'lg:grid-cols-3' : ''} ${productsPerRow >= 4 ? 'xl:grid-cols-4' : ''} gap-6`}>
-          {currentProducts.map((product, index) => (
-            <motion.div
-              key={product.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.05 }}
-            >
-              <ProductCard product={product} />
-            </motion.div>
-          ))}
-        </div>
+        {productsLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[...Array(8)].map((_, index) => (
+              <div key={index} className="animate-pulse">
+                <div className="bg-gray-800 rounded-xl h-96"></div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className={`grid grid-cols-1 ${productsPerRow >= 2 ? 'sm:grid-cols-2' : ''} ${productsPerRow >= 3 ? 'lg:grid-cols-3' : ''} ${productsPerRow >= 4 ? 'xl:grid-cols-4' : ''} gap-6`}>
+            {products.map((product, index) => (
+              <motion.div
+                key={product._id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.05 }}
+              >
+                <ProductCard product={product} />
+              </motion.div>
+            ))}
+          </div>
+        )}
 
         {totalPages > 1 && (
           <motion.div
@@ -117,7 +123,7 @@ export default function ProductsPage() {
           >
             <div className="flex items-center gap-2">
               <button
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                onClick={() => handlePageChange(currentPage - 1)}
                 disabled={currentPage === 1}
                 className="px-4 py-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -139,7 +145,7 @@ export default function ProductsPage() {
                 return (
                   <button
                     key={pageNum}
-                    onClick={() => setCurrentPage(pageNum)}
+                    onClick={() => handlePageChange(pageNum)}
                     className={`w-10 h-10 rounded-lg transition-all ${currentPage === pageNum ? 'bg-green-600 text-white' : 'bg-gray-800 hover:bg-gray-700'}`}
                   >
                     {pageNum}
@@ -148,7 +154,7 @@ export default function ProductsPage() {
               })}
               
               <button
-                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                onClick={() => handlePageChange(currentPage + 1)}
                 disabled={currentPage === totalPages}
                 className="px-4 py-2 bg-gray-800 rounded-lg hover:bg-gray-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
