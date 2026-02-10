@@ -4,28 +4,37 @@ import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import AdminSidebar from '@/components/admin/Sidebar';
 import AdminHeader from '@/components/admin/Header';
+import { useAppContext } from '@/context/AppContext';
 
 export default function AdminLayout({ children }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { isAuthenticated: contextAuth, authLoading, logout } = useAppContext();
+  
   const [isLoading, setIsLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    // Check authentication
+    
     const checkAuth = () => {
-      const auth = localStorage.getItem('adminAuth');
-      if (auth !== 'true' && pathname !== '/admin/login') {
-        router.push('/user');
-      } else {
+      const accessToken = localStorage.getItem('accessToken');
+      const admin = localStorage.getItem('admin');
+      
+      if ((!accessToken || !admin) && pathname !== '/admin/login') {
+        router.replace('/'); 
+        return;
+      }
+      
+      if (accessToken && admin) {
         setIsAuthenticated(true);
       }
+      
       setIsLoading(false);
     };
 
-    // Handle responsive sidebar
+    
     const handleResize = () => {
       const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
@@ -44,17 +53,25 @@ export default function AdminLayout({ children }) {
     return () => window.removeEventListener('resize', handleResize);
   }, [router, pathname]);
 
+  
+  useEffect(() => {
+    if (!authLoading && contextAuth) {
+      setIsAuthenticated(true);
+      setIsLoading(false);
+    }
+  }, [contextAuth, authLoading]);
+
   const handleLogout = () => {
-    localStorage.removeItem('adminAuth');
-    localStorage.removeItem('adminUser');
-    router.push('/user');
+    
+    logout();
+    router.replace('/');
   };
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-  if (isLoading) {
+  if (isLoading || authLoading) {
     return (
       <div className="min-h-screen bg-gray-900 flex items-center justify-center">
         <div className="text-center">
@@ -87,7 +104,6 @@ export default function AdminLayout({ children }) {
         isMobile={isMobile}
       />
       
-      {/* Main Content Area */}
       <main 
         className={`
           pt-16 transition-all duration-300

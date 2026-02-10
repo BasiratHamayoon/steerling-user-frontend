@@ -2,16 +2,23 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaUser, FaLock, FaTimes, FaEye, FaEyeSlash, FaCogs } from 'react-icons/fa';
+import { FaEnvelope, FaLock, FaTimes, FaEye, FaEyeSlash, FaCogs, FaSpinner } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
 import { useAppContext } from '@/context/AppContext';
 
 export default function AdminLoginModal() {
-  const { isAdminLoginOpen, setIsAdminLoginOpen } = useAppContext();
+  const { 
+    isAdminLoginOpen, 
+    setIsAdminLoginOpen, 
+    login, 
+    authLoading,
+    isAuthenticated 
+  } = useAppContext();
+  
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
-    username: '',
+    email: '',
     password: ''
   });
   const [error, setError] = useState('');
@@ -19,27 +26,34 @@ export default function AdminLoginModal() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    e.stopPropagation(); // Add this to stop event bubbling
+    
     setError('');
     setIsLoading(true);
 
-    // Simple authentication (in real app, this would be an API call)
-    setTimeout(() => {
-      if (formData.username === 'admin' && formData.password === 'admin123') {
-        // Store authentication in localStorage
-        localStorage.setItem('adminAuth', 'true');
-        localStorage.setItem('adminUser', JSON.stringify({
-          username: formData.username,
-          name: 'Administrator',
-          email: 'admin@steerflux.com'
-        }));
+    try {
+      const result = await login(formData.email, formData.password);
+
+      if (result.success) {
+        // Clear form data
+        setFormData({ email: '', password: '' });
         
+        // Close modal first
         setIsAdminLoginOpen(false);
-        router.push('/admin/dashboard');
+        
+        // Use setTimeout to ensure modal closes before navigation
+        setTimeout(() => {
+          router.replace('/admin/dashboard'); // Use replace instead of push
+        }, 100);
       } else {
-        setError('Invalid username or password');
-        setIsLoading(false);
+        setError(result.error || 'Invalid email or password');
       }
-    }, 1000);
+    } catch (err) {
+      setError('An error occurred. Please try again.');
+      console.error('Login error:', err);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleChange = (e) => {
@@ -47,6 +61,14 @@ export default function AdminLoginModal() {
       ...formData,
       [e.target.name]: e.target.value
     });
+    
+    if (error) setError('');
+  };
+
+  const handleClose = () => {
+    setIsAdminLoginOpen(false);
+    setError('');
+    setFormData({ email: '', password: '' });
   };
 
   return (
@@ -57,7 +79,7 @@ export default function AdminLoginModal() {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          onClick={() => setIsAdminLoginOpen(false)}
+          onClick={handleClose}
         >
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
           
@@ -69,38 +91,46 @@ export default function AdminLoginModal() {
             className="relative glass-effect rounded-2xl p-6 w-full max-w-md"
             onClick={(e) => e.stopPropagation()}
           >
+            {/* Close Button */}
             <button
-              onClick={() => setIsAdminLoginOpen(false)}
+              onClick={handleClose}
               className="absolute right-4 top-4 p-2 hover:bg-gray-800/50 rounded-full transition-colors"
+              type="button"
             >
               <FaTimes />
             </button>
 
+            {/* Header */}
             <div className="text-center mb-6">
-              <div className="w-16 h-16 mx-auto mb-4 bg-gradient-to-br from-[#0295E6] to-[#0275c6] rounded-full flex items-center justify-center">
+              <div className="w-16 h-16 mx-auto mb-4 bg-[#0295E6] rounded-full flex items-center justify-center">
                 <FaCogs className="text-2xl text-white" />
               </div>
               <h3 className="text-2xl font-bold mb-2">Admin Login</h3>
               <p className="text-gray-400">Access the admin dashboard</p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+              {/* Email Field */}
               <div>
-                <label className="block text-sm font-medium mb-2">Username</label>
+                <label className="block text-sm font-medium mb-2">Email</label>
                 <div className="relative">
-                  <FaUser className="absolute left-4 top-3.5 text-gray-400" />
+                  <FaEnvelope className="absolute left-4 top-3.5 text-gray-400" />
                   <input
-                    type="text"
-                    name="username"
-                    value={formData.username}
+                    type="email"
+                    name="email"
+                    value={formData.email}
                     onChange={handleChange}
                     required
-                    className="w-full pl-12 pr-4 py-3 bg-gray-800/50 rounded-xl border border-gray-700 focus:border-[#0295E6] focus:outline-none focus:ring-2 focus:ring-[#0295E6]/30"
-                    placeholder="Enter username"
+                    disabled={isLoading}
+                    className="w-full pl-12 pr-4 py-3 bg-gray-800/50 rounded-xl border border-gray-700 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    placeholder="admin@example.com"
+                    autoComplete="email"
                   />
                 </div>
               </div>
 
+              {/* Password Field */}
               <div>
                 <label className="block text-sm font-medium mb-2">Password</label>
                 <div className="relative">
@@ -111,39 +141,57 @@ export default function AdminLoginModal() {
                     value={formData.password}
                     onChange={handleChange}
                     required
-                    className="w-full pl-12 pr-12 py-3 bg-gray-800/50 rounded-xl border border-gray-700 focus:border-[#0295E6] focus:outline-none focus:ring-2 focus:ring-[#0295E6]/30"
-                    placeholder="Enter password"
+                    disabled={isLoading}
+                    className="w-full pl-12 pr-12 py-3 bg-gray-800/50 rounded-xl border border-gray-700 focus:border-green-500 focus:outline-none focus:ring-2 focus:ring-green-500/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    placeholder="Enter your password"
+                    autoComplete="current-password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-3.5 text-gray-400 hover:text-gray-300"
+                    disabled={isLoading}
+                    className="absolute right-4 top-3.5 text-gray-400 hover:text-gray-300 disabled:opacity-50"
                   >
                     {showPassword ? <FaEyeSlash /> : <FaEye />}
                   </button>
                 </div>
               </div>
 
-              {error && (
-                <div className="p-3 bg-red-900/30 border border-red-700/50 rounded-lg">
-                  <p className="text-red-300 text-sm">{error}</p>
-                </div>
-              )}
+              {/* Error Message */}
+              <AnimatePresence>
+                {error && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="p-3 bg-red-900/30 border border-red-700/50 rounded-lg"
+                  >
+                    <p className="text-red-300 text-sm text-center">{error}</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
 
+              {/* Submit Button */}
               <button
                 type="submit"
-                disabled={isLoading}
-                className="w-full bg-gradient-to-r from-[#0295E6] to-[#0275c6] hover:from-[#0284d6] hover:to-[#0265b6] text-white py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isLoading || !formData.email || !formData.password}
+                className="w-full flex items-center justify-center gap-2 bg-[#0295E6] to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
-                {isLoading ? 'Logging in...' : 'Login'}
+                {isLoading ? (
+                  <>
+                    <FaSpinner className="animate-spin" />
+                    Logging in...
+                  </>
+                ) : (
+                  'Login'
+                )}
               </button>
             </form>
 
-            <div className="mt-6 text-center">
-              <p className="text-sm text-gray-400">
-                Demo Credentials:<br />
-                Username: <span className="text-[#0295E6]">admin</span><br />
-                Password: <span className="text-[#0295E6]">admin123</span>
+            {/* Footer */}
+            <div className="mt-6 pt-4 border-t border-gray-700/50">
+              <p className="text-center text-sm text-gray-500">
+                Authorized personnel only
               </p>
             </div>
           </motion.div>
