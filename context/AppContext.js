@@ -5,6 +5,7 @@ import authService from '@/services/authService';
 import categoryService from '@/services/categoryService';
 import productService from '@/services/productService';
 import messageService from '@/services/messageService';
+import dashboardService from '@/services/dashboardService';
 
 const AppContext = createContext();
 
@@ -667,7 +668,53 @@ const fetchMessageStats = async () => {
     setNotification({ message, type });
     setTimeout(() => setNotification(null), 5000);
   };
+  const changePassword = async (currentPassword, newPassword) => {
+  try {
+    setAuthLoading(true);
+    setError(null);
 
+    const response = await authService.changePassword(currentPassword, newPassword);
+
+    if (response.success) {
+      const { accessToken, refreshToken } = response.data;
+
+      // Update tokens in localStorage
+      localStorage.setItem('accessToken', accessToken);
+      localStorage.setItem('refreshToken', refreshToken);
+
+      showNotification('Password changed successfully! Please log in again.', 'success');
+      return { success: true };
+    }
+  } catch (error) {
+    const message = error.response?.data?.message || 'Failed to change password';
+    setError(message);
+    showNotification(message, 'error');
+    return { success: false, error: message };
+  } finally {
+    setAuthLoading(false);
+  }
+};
+
+  const fetchDashboardStats = async () => {
+    try {
+      const response = await dashboardService.getStats();
+      return response;
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to fetch dashboard stats';
+      console.error('fetchDashboardStats error:', error); // Debug
+      return { success: false, error: message };
+    }
+  };
+
+  const fetchRecentMessages = async (limit = 5) => {
+    try {
+      const response = await dashboardService.getRecentMessages(limit);
+      return response;
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to fetch recent messages';
+      return { success: false, error: message };
+    }
+  };
   const clearError = () => setError(null);
   const clearNotification = () => setNotification(null);
 
@@ -682,7 +729,9 @@ const fetchMessageStats = async () => {
     isAdminLoginOpen,
     setIsAdminLoginOpen,
 
-    
+    fetchDashboardStats,
+    fetchRecentMessages,
+
     addToCart,
     removeFromCart,
     updateCartQuantity,
@@ -697,6 +746,7 @@ const fetchMessageStats = async () => {
     login,
     logout,
     register,
+    changePassword,
 
     
     categories,

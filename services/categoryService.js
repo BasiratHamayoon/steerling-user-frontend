@@ -3,7 +3,6 @@ import api from './api';
 const categoryService = {
   getAll: async (params = {}) => {
     const response = await api.get('/categories', { params });
-    console.log('Fetched categories:', response.data);
     return response.data;
   },
 
@@ -13,12 +12,22 @@ const categoryService = {
   },
 
   create: async (data) => {
-    const response = await api.post('/categories', data);
+    // data is FormData
+    const response = await api.post('/categories', data, {
+      headers: {
+        'Content-Type': undefined
+      }
+    });
     return response.data;
   },
 
   update: async (id, data) => {
-    const response = await api.put(`/categories/${id}`, data);
+    // data is FormData
+    const response = await api.put(`/categories/${id}`, data, {
+      headers: {
+        'Content-Type': undefined
+      }
+    });
     return response.data;
   },
 

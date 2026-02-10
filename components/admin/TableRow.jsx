@@ -1,7 +1,8 @@
 'use client';
 
+import getImageUrl from '@/utils/imageUrl';
 import { motion } from 'framer-motion';
-import { FaEye, FaEdit, FaTrash, FaBox } from 'react-icons/fa';
+import { FaEye, FaEdit, FaTrash } from 'react-icons/fa';
 
 export default function TableRow({ item, index, onView, onEdit, onDelete, type = 'product' }) {
   const isProduct = type === 'product';
@@ -15,73 +16,45 @@ export default function TableRow({ item, index, onView, onEdit, onDelete, type =
     >
       <td className="py-4 px-6">
         <div className="flex items-center gap-3">
-          {isProduct ? (
-            <>
-              <div className="w-12 h-12 rounded-lg overflow-hidden">
-                <img
-                  src={item.images?.[0] || 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&w=800&q=80'}
-                  alt={item.name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div>
-                <p className="font-semibold">{item.name}</p>
-                <p className="text-sm text-gray-400">{item.model}</p>
-              </div>
-            </>
-          ) : (
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-lg overflow-hidden">
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div>
-                <p className="font-semibold">{item.name}</p>
-                <p className="text-sm text-gray-400">ID: {item.id}</p>
-              </div>
-            </div>
-          )}
+          <div className="w-12 h-12 rounded-lg overflow-hidden">
+            <img
+              src={getImageUrl(item.images?.[0]) || '/placeholder-product.jpg'}
+              alt={item.title}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = '/placeholder-product.jpg';
+              }}
+            />
+          </div>
+          <div>
+            <p className="font-semibold">{item.title}</p>
+            <p className="text-sm text-gray-400">{item.model}</p>
+          </div>
         </div>
       </td>
       
-      {isProduct && (
-        <td className="py-4 px-6">
-          <span className="px-3 py-1 bg-gray-700/50 rounded-full text-sm">
-            {item.category}
-          </span>
-        </td>
-      )}
+      <td className="py-4 px-6">
+        <span className="px-3 py-1 bg-gray-700/50 rounded-full text-sm">
+          {item.category?.name || 'Uncategorized'}
+        </span>
+      </td>
       
-      {isProduct ? (
-        <td className="py-4 px-6 font-bold text-[#0295E6]">
-          ${item.price}
-        </td>
-      ) : (
-        <td className="py-4 px-6">
-          <span className="px-3 py-1 bg-gray-700/50 rounded-full text-sm">
-            {item.count} products
-          </span>
-        </td>
-      )}
+      <td className="py-4 px-6 font-bold text-[#0295E6]">
+        ${item.price}
+      </td>
       
-      {isProduct && (
-        <td className="py-4 px-6">
-          {item.stockCount}
-        </td>
-      )}
+      <td className="py-4 px-6">
+        {item.quantity}
+      </td>
       
-      {isProduct && (
-        <td className="py-4 px-6">
-          <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-            item.inStock ? 'bg-green-900/30 text-green-300' : 'bg-red-900/30 text-red-300'
-          }`}>
-            {item.inStock ? 'In Stock' : 'Out of Stock'}
-          </span>
-        </td>
-      )}
+      <td className="py-4 px-6">
+        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+          item.stockStatus === 'inStock' ? 'bg-green-900/30 text-green-300' : 'bg-red-900/30 text-red-300'
+        }`}>
+          {item.stockStatus === 'inStock' ? 'In Stock' : 'Out of Stock'}
+        </span>
+      </td>
       
       <td className="py-4 px-6">
         <div className="flex items-center gap-2">

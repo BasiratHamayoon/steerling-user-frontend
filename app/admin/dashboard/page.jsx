@@ -11,100 +11,224 @@ import {
   FaArrowDown,
   FaPlus,
   FaCog,
-  FaEye
+  FaEye,
+  FaExclamationTriangle,
+  FaMoneyBillWave,
+  FaCalendarAlt,
+  FaClock,
+  FaSync,
+  FaCommentAlt
 } from 'react-icons/fa';
-
-const stats = [
-  { 
-    label: 'Total Products', 
-    value: '156', 
-    icon: <FaBox className="text-3xl" />, 
-    change: '+12%', 
-    trend: 'up', 
-    color: 'from-[#0295E6] to-[#02b3e6]' 
-  },
-  { 
-    label: 'Total Categories', 
-    value: '8', 
-    icon: <FaTags className="text-3xl" />, 
-    change: '+2', 
-    trend: 'up', 
-    color: 'from-[#0295E6] to-[#02b3e6]' 
-  },
-  { 
-    label: 'Total Messages', 
-    value: '342', 
-    icon: <FaEnvelope className="text-3xl" />, 
-    change: '-5%', 
-    trend: 'down', 
-    color: 'from-[#0295E6] to-[#02b3e6]' 
-  },
-];
-
-const recentMessages = [
-  { 
-    id: 1, 
-    name: 'Alex Turner', 
-    email: 'alex@example.com', 
-    message: 'Interested in custom steering wheels for my vintage car collection...', 
-    date: '2 hours ago', 
-    status: 'unread' 
-  },
-  { 
-    id: 2, 
-    name: 'Sarah Miller', 
-    email: 'sarah@example.com', 
-    message: 'Do you provide installation services for the steering wheels?', 
-    date: '5 hours ago', 
-    status: 'read' 
-  },
-  { 
-    id: 3, 
-    name: 'David Wilson', 
-    email: 'david@example.com', 
-    message: 'Looking for bulk order discount for SUV steering wheels...', 
-    date: '1 day ago', 
-    status: 'read' 
-  },
-  { 
-    id: 4, 
-    name: 'Michael Brown', 
-    email: 'michael@example.com', 
-    message: 'Need assistance with choosing the right steering wheel for racing setup...', 
-    date: '2 days ago', 
-    status: 'replied' 
-  },
-];
+import { useAppContext } from '@/context/AppContext';
+import Loading from '@/components/ui/Loading';
 
 export default function AdminDashboard() {
+  const { 
+    fetchDashboardStats,
+    fetchMessages,
+    showNotification 
+  } = useAppContext();
+  
   const [time, setTime] = useState(new Date());
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState(null);
+  const [recentMessages, setRecentMessages] = useState([]);
+  const [error, setError] = useState(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(interval);
   }, []);
 
-  const totalProducts = 156;
-  const totalCategories = 8;
-  const totalMessages = 342;
+  const loadDashboardData = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const [statsResponse, messagesResponse] = await Promise.all([
+        fetchDashboardStats(),
+        fetchMessages({ limit: 4, isArchived: false })
+      ]);
+
+      console.log('Dashboard stats response:', statsResponse); // Debug
+      console.log('Messages response:', messagesResponse); // Debug
+
+      if (statsResponse.success) {
+        console.log('Setting stats:', statsResponse.data); // Debug
+        setStats(statsResponse.data);
+      } else {
+        console.error('Stats response failed:', statsResponse.error);
+        setError(statsResponse.error || 'Failed to load statistics');
+      }
+
+      if (messagesResponse.success && messagesResponse.data?.messages) {
+        setRecentMessages(messagesResponse.data.messages);
+      } else if (messagesResponse.error) {
+        console.error('Messages response failed:', messagesResponse.error);
+      }
+    } catch (error) {
+      console.error('Failed to load dashboard data:', error);
+      const errorMessage = error.response?.data?.message || error.message || 'Failed to load dashboard data. Please try again.';
+      setError(errorMessage);
+      showNotification(errorMessage, 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadDashboardData();
+  }, [retryCount]);
+
+  const handleRetry = () => {
+    setRetryCount(prev => prev + 1);
+  };
+
+  const formatCurrency = (value) => {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(value);
+  };
+
+  const formatNumber = (value) => {
+    return value?.toLocaleString('en-US') || '0';
+  };
+
+  const getTimeAgo = (dateString) => {
+    if (!dateString) return 'Just now';
+    try {
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffInHours = (now - date) / (1000 * 60 * 60);
+      
+      if (diffInHours < 24) {
+        if (diffInHours < 1) {
+          const minutes = Math.floor(diffInHours * 60);
+          return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
+        }
+        return `${Math.floor(diffInHours)} hour${Math.floor(diffInHours) !== 1 ? 's' : ''} ago`;
+      }
+      return `${Math.floor(diffInHours / 24)} day${Math.floor(diffInHours / 24) !== 1 ? 's' : ''} ago`;
+    } catch {
+      return 'Just now';
+    }
+  };
+
+  const getMessagePreview = (message) => {
+    if (!message || !message.message) return 'No message content';
+    return message.message.length > 60 
+      ? `${message.message.substring(0, 60)}...` 
+      : message.message;
+  };
+
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'unread':
+        return 'bg-blue-500/20 text-blue-300 border border-blue-500/30';
+      case 'replied':
+        return 'bg-green-500/20 text-green-300 border border-green-500/30';
+      default:
+        return 'bg-gray-500/20 text-gray-400 border border-gray-500/30';
+    }
+  };
+
+  if (loading) {
+    return <Loading text="Loading dashboard data..." fullScreen />;
+  }
+
+  const dashboardStats = [
+    { 
+      label: 'Total Products', 
+      value: formatNumber(stats?.totalProducts), 
+      icon: <FaBox className="text-3xl" />, 
+      change: '+12%', 
+      trend: 'up', 
+      color: 'from-[#0295E6] to-[#02b3e6]' 
+    },
+    { 
+      label: 'Total Categories', 
+      value: formatNumber(stats?.totalCategories), 
+      icon: <FaTags className="text-3xl" />, 
+      change: '+2', 
+      trend: 'up', 
+      color: 'from-[#0295E6] to-[#02b3e6]' 
+    },
+    { 
+      label: 'Out of Stock', 
+      value: formatNumber(stats?.outOfStockProducts), 
+      icon: <FaExclamationTriangle className="text-3xl" />, 
+      change: stats?.outOfStockProducts > 0 ? 'Need restocking' : 'All stocked', 
+      trend: stats?.outOfStockProducts > 0 ? 'down' : 'up', 
+      color: 'from-[#0295E6] to-[#02b3e6]' 
+    },
+    { 
+      label: 'Unread Messages', 
+      value: formatNumber(stats?.unreadMessages), 
+      icon: <FaCommentAlt className="text-3xl" />, 
+      change: stats?.unreadMessages > 0 ? `${stats.unreadMessages} unread` : 'All read', 
+      trend: stats?.unreadMessages > 0 ? 'up' : 'down', 
+      color: 'from-[#0295E6] to-[#02b3e6]'
+    },
+  ];
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold mb-2">Dashboard Overview</h1>
-        <p className="text-gray-400">
-          Welcome back, Administrator! Here's what's happening with your store today.
-          <span className="ml-2 text-[#0295E6]">
-            {time.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} • 
-            {time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
-          </span>
-        </p>
+      {/* Header with refresh button */}
+      <div className="flex justify-between items-start">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Dashboard Overview</h1>
+          <p className="text-gray-400">
+            Welcome back, Administrator! Here's what's happening with your store today.
+            <span className="ml-2 text-[#0295E6] flex items-center gap-2">
+              <FaCalendarAlt />
+              {time.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })} • 
+              <FaClock className="ml-2" />
+              {time.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+            </span>
+          </p>
+        </div>
+        <button
+          onClick={handleRetry}
+          className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#0295E6] to-[#02b3e6] text-white rounded-lg hover:opacity-90 transition-opacity"
+          disabled={loading}
+        >
+          <FaSync className={loading ? 'animate-spin' : ''} />
+          Refresh
+        </button>
       </div>
 
+      {/* Error Message */}
+      {error && (
+        <div className="p-4 bg-red-500/10 border border-red-500/20 text-red-300 rounded-xl">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <FaExclamationTriangle />
+              <span>{error}</span>
+            </div>
+            <button
+              onClick={handleRetry}
+              className="text-sm underline hover:text-red-200"
+            >
+              Try Again
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Debug info (remove in production) */}
+      {stats && (
+        <div className="text-xs text-gray-500 bg-gray-800/30 p-2 rounded">
+          Debug: Categories in DB: {stats?.totalCategories}, Products: {stats?.totalProducts}
+        </div>
+      )}
+
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {stats.map((stat, index) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {dashboardStats.map((stat, index) => (
           <motion.div
             key={stat.label}
             initial={{ opacity: 0, y: 20 }}
@@ -150,43 +274,53 @@ export default function AdminDashboard() {
             <FaEye />
           </button>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {recentMessages.map((message) => (
-            <div
-              key={message.id}
-              className={`p-4 rounded-xl transition-all hover:scale-[1.02] cursor-pointer border ${
-                message.status === 'unread'
-                  ? 'bg-gradient-to-r from-[#0295E6]/10 to-[#02b3e6]/5 border-[#0295E6]/20'
-                  : 'bg-gray-700/20 border-gray-700/30'
-              }`}
-              onClick={() => window.location.href = `/admin/messages`}
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <h4 className="font-semibold text-lg">{message.name}</h4>
-                  <p className="text-sm text-gray-400">{message.email}</p>
-                </div>
-                <span className={`text-xs px-2 py-1 rounded-full ${
-                  message.status === 'unread' ? 'bg-blue-900/50 text-blue-300' :
-                  message.status === 'replied' ? 'bg-blue-900/50 text-blue-300' :
-                  'bg-gray-700/50 text-gray-400'
-                }`}>
-                  {message.status}
-                </span>
-              </div>
-              <p className="text-sm text-gray-300 line-clamp-2 mb-3">{message.message}</p>
-              <div className="flex items-center justify-between text-xs text-gray-500">
-                <span>{message.date}</span>
-                {message.status === 'unread' && (
-                  <span className="flex items-center gap-1">
-                    <span className="w-2 h-2 bg-[#0295E6] rounded-full animate-pulse" />
-                    <span>Unread</span>
+        
+        {recentMessages.length === 0 ? (
+          <div className="text-center py-8 text-gray-400">
+            <FaEnvelope className="text-4xl mx-auto mb-4 opacity-50" />
+            <p>No recent messages</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {recentMessages.map((message) => (
+              <div
+                key={message._id}
+                className={`p-4 rounded-xl transition-all hover:scale-[1.02] cursor-pointer border relative ${
+                  message.status === 'unread'
+                    ? 'bg-gradient-to-r from-[#0295E6]/10 to-[#02b3e6]/5 border-[#0295E6]/20'
+                    : 'bg-gray-700/20 border-gray-700/30'
+                }`}
+                onClick={() => window.location.href = `/admin/messages/${message._id}`}
+              >
+                {/* Fixed badge position */}
+                <div className="absolute top-3 right-3">
+                  <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(message.status)} whitespace-nowrap`}>
+                    {message.status.charAt(0).toUpperCase() + message.status.slice(1)}
                   </span>
-                )}
+                </div>
+                
+                <div className="pr-12">
+                  <h4 className="font-semibold text-lg mb-1 truncate">{message.name || 'Unknown User'}</h4>
+                  <p className="text-sm text-gray-400 mb-3 truncate">{message.email || 'No email'}</p>
+                </div>
+                
+                <p className="text-sm text-gray-300 line-clamp-2 mb-3 h-12">
+                  {getMessagePreview(message)}
+                </p>
+                
+                <div className="flex items-center justify-between text-xs text-gray-500 pt-2 border-t border-gray-700/30">
+                  <span className="truncate mr-2">{getTimeAgo(message.createdAt)}</span>
+                  {message.status === 'unread' && (
+                    <span className="flex items-center gap-1 flex-shrink-0">
+                      <span className="w-2 h-2 bg-[#0295E6] rounded-full animate-pulse" />
+                      <span>Unread</span>
+                    </span>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </motion.div>
 
       {/* Quick Actions */}

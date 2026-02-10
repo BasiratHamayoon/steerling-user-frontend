@@ -25,7 +25,7 @@ export default function BackgroundAnimation() {
         this.size = Math.random() * 2 + 0.5;
         this.speedX = Math.random() * 0.5 - 0.25;
         this.speedY = Math.random() * 0.5 - 0.25;
-        this.color = `rgba(34, 197, 94, ${Math.random() * 0.1 + 0.05})`;
+        this.color = `rgba(2, 149, 230, ${Math.random() * 0.1 + 0.05})`;
       }
 
       update() {
@@ -78,7 +78,7 @@ export default function BackgroundAnimation() {
 
           if (distance < 100) {
             ctx.beginPath();
-            ctx.strokeStyle = `rgba(34, 197, 94, ${0.1 * (1 - distance / 100)})`;
+            ctx.strokeStyle = `rgba(2, 149, 230, ${0.1 * (1 - distance / 100)})`;
             ctx.lineWidth = 0.5;
             ctx.moveTo(particles[i].x, particles[i].y);
             ctx.lineTo(particles[j].x, particles[j].y);

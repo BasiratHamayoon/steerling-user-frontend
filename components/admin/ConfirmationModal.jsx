@@ -4,12 +4,10 @@ import { motion } from 'framer-motion';
 import { FaExclamationTriangle, FaCheck, FaTimes } from 'react-icons/fa';
 
 export default function ConfirmationModal({ isOpen, onClose, onConfirm, title, message, type = 'warning' }) {
-  if (!isOpen) return null;
-
   const getIcon = () => {
     switch (type) {
       case 'success':
-        return <FaCheck className="text-[#0295E6] text-4xl" />;
+        return <FaCheck className="text-green-400 text-4xl" />;
       case 'danger':
         return <FaExclamationTriangle className="text-red-400 text-4xl" />;
       default:
@@ -20,13 +18,15 @@ export default function ConfirmationModal({ isOpen, onClose, onConfirm, title, m
   const getButtonColor = () => {
     switch (type) {
       case 'success':
-        return 'bg-[#0295E6] hover:bg-[#0284c6]';
+        return 'bg-green-600 hover:bg-green-700';
       case 'danger':
         return 'bg-red-600 hover:bg-red-700';
       default:
         return 'bg-yellow-600 hover:bg-yellow-700';
     }
   };
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
@@ -52,10 +52,7 @@ export default function ConfirmationModal({ isOpen, onClose, onConfirm, title, m
               Cancel
             </button>
             <button
-              onClick={() => {
-                onConfirm();
-                onClose();
-              }}
+              onClick={onConfirm}
               className={`px-6 py-3 rounded-xl transition-colors flex items-center gap-2 ${getButtonColor()}`}
             >
               <FaCheck />

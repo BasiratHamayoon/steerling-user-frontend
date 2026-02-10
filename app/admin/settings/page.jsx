@@ -1,14 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FaUser, FaLock, FaEnvelope, FaSave, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaUser, FaLock, FaEnvelope, FaSave, FaEye, FaEyeSlash, FaCalendar, FaHistory, FaKey, FaCheckCircle } from 'react-icons/fa';
+import { useAppContext } from '@/context/AppContext';
 
 export default function AdminSettingsPage() {
+  const { admin, login, changePassword, logout } = useAppContext();
+  
   const [adminData, setAdminData] = useState({
-    username: 'admin',
-    email: 'admin@steerflux.com',
-    name: 'Administrator'
+    name: '',
+    email: '',
+    role: ''
   });
 
   const [passwordData, setPasswordData] = useState({
@@ -20,46 +23,203 @@ export default function AdminSettingsPage() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
   const [isSaving, setIsSaving] = useState(false);
+  const [isChangingPassword, setIsChangingPassword] = useState(false);
+  const [saveMessage, setSaveMessage] = useState('');
+  const [saveMessageType, setSaveMessageType] = useState('success');
+  
+  // Modal state
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [modalMessage, setModalMessage] = useState('');
 
-  const handleSaveProfile = () => {
+  // Load admin data on component mount
+  useEffect(() => {
+    if (admin) {
+      setAdminData({
+        name: admin.name || '',
+        email: admin.email || '',
+        role: admin.role || 'admin'
+      });
+    }
+  }, [admin]);
+
+  const handleSaveProfile = async () => {
     setIsSaving(true);
-    setTimeout(() => {
-      alert('Profile information updated successfully!');
+    setSaveMessage('');
+    
+    try {
+      // Note: Your backend doesn't have a profile update endpoint yet
+      // So we'll just show a success message for now
+      setTimeout(() => {
+        setSaveMessage('Profile information updated successfully!');
+        setSaveMessageType('success');
+        setIsSaving(false);
+      }, 1000);
+    } catch (error) {
+      setSaveMessage('Failed to update profile');
+      setSaveMessageType('error');
       setIsSaving(false);
-    }, 1000);
+    }
   };
 
-  const handleChangePassword = () => {
-    if (passwordData.newPassword !== passwordData.confirmPassword) {
-      alert('New passwords do not match!');
+  const handleChangePassword = async () => {
+    if (!passwordData.currentPassword.trim()) {
+      setSaveMessage('Current password is required');
+      setSaveMessageType('error');
+      return;
+    }
+
+    if (!passwordData.newPassword.trim()) {
+      setSaveMessage('New password is required');
+      setSaveMessageType('error');
       return;
     }
 
     if (passwordData.newPassword.length < 6) {
-      alert('New password must be at least 6 characters long!');
+      setSaveMessage('New password must be at least 6 characters');
+      setSaveMessageType('error');
       return;
     }
 
-    setIsSaving(true);
-    setTimeout(() => {
-      alert('Password changed successfully!');
-      setPasswordData({
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: ''
-      });
-      setIsSaving(false);
-    }, 1000);
+    if (!passwordData.confirmPassword.trim()) {
+      setSaveMessage('Please confirm your new password');
+      setSaveMessageType('error');
+      return;
+    }
+
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      setSaveMessage('Passwords do not match');
+      setSaveMessageType('error');
+      return;
+    }
+
+    setIsChangingPassword(true);
+    setSaveMessage('');
+    
+    try {
+      const response = await changePassword(
+        passwordData.currentPassword,
+        passwordData.newPassword
+      );
+      
+      if (response.success) {
+        setModalMessage('Password changed successfully! You can continue using the application with your new password.');
+        setShowSuccessModal(true);
+        
+        // Clear all password fields
+        setPasswordData({
+          currentPassword: '',
+          newPassword: '',
+          confirmPassword: ''
+        });
+        
+        // Reset password visibility
+        setShowCurrentPassword(false);
+        setShowNewPassword(false);
+        setShowConfirmPassword(false);
+      } else {
+        setSaveMessage(response.error || 'Failed to change password');
+        setSaveMessageType('error');
+      }
+    } catch (error) {
+      setSaveMessage(error.response?.data?.message || 'Failed to change password');
+      setSaveMessageType('error');
+    } finally {
+      setIsChangingPassword(false);
+    }
+  };
+
+  const closeSuccessModal = () => {
+    setShowSuccessModal(false);
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'Never';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
+  const getTimeAgo = (dateString) => {
+    if (!dateString) return 'Never';
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInHours = (now - date) / (1000 * 60 * 60);
+    
+    if (diffInHours < 24) {
+      if (diffInHours < 1) {
+        const minutes = Math.floor(diffInHours * 60);
+        return `${minutes} minute${minutes !== 1 ? 's' : ''} ago`;
+      }
+      return `${Math.floor(diffInHours)} hour${Math.floor(diffInHours) !== 1 ? 's' : ''} ago`;
+    }
+    return formatDate(dateString);
   };
 
   return (
     <div className="space-y-6">
+      {/* Success Modal */}
+      {showSuccessModal && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-gray-800 rounded-2xl border border-gray-700/50 max-w-md w-full p-6"
+          >
+            <div className="flex flex-col items-center text-center mb-6">
+              <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mb-4">
+                <FaCheckCircle className="text-3xl text-green-400" />
+              </div>
+              <h3 className="text-xl font-bold mb-2">Password Changed Successfully!</h3>
+              <p className="text-gray-300">{modalMessage}</p>
+            </div>
+            
+            <div className="flex justify-center">
+              <button
+                onClick={closeSuccessModal}
+                className="px-6 py-3 bg-gradient-to-r from-[#0295E6] to-[#02b3e6] hover:from-[#0284c6] hover:to-[#0295E6] text-white rounded-xl font-semibold transition-all duration-300"
+              >
+                Continue Using Application
+              </button>
+            </div>
+            
+            <div className="mt-6 pt-6 border-t border-gray-700/50 text-center">
+              <p className="text-sm text-gray-400 mb-2">Security Recommendation</p>
+              <button
+                onClick={() => {
+                  logout();
+                  window.location.href = '/admin/login';
+                }}
+                className="text-sm text-[#0295E6] hover:text-[#02b3e6] transition-colors"
+              >
+                Log out and log in with new password
+              </button>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
       {/* Header */}
       <div>
         <h1 className="text-3xl font-bold mb-2">Settings</h1>
         <p className="text-gray-400">Manage your account settings and preferences</p>
       </div>
+
+      {/* Save Message */}
+      {saveMessage && (
+        <div className={`p-4 rounded-xl border ${
+          saveMessageType === 'success' 
+            ? 'bg-green-500/10 border-green-500/20 text-green-300' 
+            : 'bg-red-500/10 border-red-500/20 text-red-300'
+        }`}>
+          <p>{saveMessage}</p>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Profile Information */}
@@ -74,18 +234,6 @@ export default function AdminSettingsPage() {
           </h2>
           
           <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Username</label>
-              <input
-                type="text"
-                className="w-full px-4 py-3 bg-gray-800/50 rounded-xl border border-gray-700 focus:border-[#0295E6] focus:outline-none"
-                value={adminData.username}
-                onChange={(e) => setAdminData({...adminData, username: e.target.value})}
-                disabled
-              />
-              <p className="text-xs text-gray-500 mt-1">Username cannot be changed</p>
-            </div>
-            
             <div>
               <label className="block text-sm font-medium mb-2">Full Name</label>
               <input
@@ -110,6 +258,18 @@ export default function AdminSettingsPage() {
                 />
               </div>
             </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Account Role</label>
+              <div className="px-4 py-3 bg-gray-800/50 rounded-xl border border-gray-700">
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-300 capitalize">{adminData.role}</span>
+                  <span className="text-xs px-2 py-1 bg-blue-500/20 text-blue-300 rounded">
+                    ADMINISTRATOR
+                  </span>
+                </div>
+              </div>
+            </div>
             
             <button
               onClick={handleSaveProfile}
@@ -117,7 +277,7 @@ export default function AdminSettingsPage() {
               className="flex items-center gap-2 bg-gradient-to-r from-[#0295E6] to-[#02b3e6] hover:from-[#0284c6] hover:to-[#0295E6] text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <FaSave />
-              {isSaving ? 'Saving...' : 'Save Changes'}
+              {isSaving ? 'Saving...' : 'Save Profile Changes'}
             </button>
           </div>
         </motion.div>
@@ -200,11 +360,20 @@ export default function AdminSettingsPage() {
             
             <button
               onClick={handleChangePassword}
-              disabled={isSaving}
-              className="flex items-center gap-2 bg-gradient-to-r from-[#0295E6] to-[#02b3e6] hover:from-[#0284c6] hover:to-[#0295E6] text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={isChangingPassword}
+              className="flex items-center gap-2 bg-gradient-to-r from-[#0295E6] to-[#02b3e6] hover:from-[#0284c6] hover:to-[#0295E6] text-white px-6 py-3 rounded-xl font-semibold transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed w-full justify-center"
             >
-              <FaSave />
-              {isSaving ? 'Updating...' : 'Update Password'}
+              {isChangingPassword ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Changing Password...
+                </>
+              ) : (
+                <>
+                  <FaKey />
+                  Change Password
+                </>
+              )}
             </button>
           </div>
         </motion.div>
@@ -216,24 +385,46 @@ export default function AdminSettingsPage() {
         animate={{ opacity: 1, y: 0 }}
         className="bg-gray-800/50 backdrop-blur-sm rounded-2xl border border-gray-700/30 p-6"
       >
-        <h2 className="text-xl font-bold mb-6">System Information</h2>
+        <h2 className="text-xl font-bold mb-6">Account Information</h2>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="p-4 bg-gray-900/50 rounded-xl">
-            <div className="text-sm text-gray-400 mb-1">SteerFlux Version</div>
-            <div className="text-lg font-bold">v1.0.0</div>
-          </div>
-          
-          <div className="p-4 bg-gray-900/50 rounded-xl">
-            <div className="text-sm text-gray-400 mb-1">Last Login</div>
+            <div className="text-sm text-gray-400 mb-1 flex items-center gap-2">
+              <FaCalendar />
+              Account Created
+            </div>
             <div className="text-lg font-bold">
-              {new Date().toLocaleDateString()} {new Date().toLocaleTimeString()}
+              {admin?.createdAt ? formatDate(admin.createdAt) : 'N/A'}
             </div>
           </div>
           
           <div className="p-4 bg-gray-900/50 rounded-xl">
-            <div className="text-sm text-gray-400 mb-1">Account Created</div>
-            <div className="text-lg font-bold">January 1, 2024</div>
+            <div className="text-sm text-gray-400 mb-1 flex items-center gap-2">
+              <FaHistory />
+              Last Login
+            </div>
+            <div className="text-lg font-bold">
+              {admin?.lastLogin ? getTimeAgo(admin.lastLogin) : 'Never'}
+            </div>
+          </div>
+          
+          <div className="p-4 bg-gray-900/50 rounded-xl">
+            <div className="text-sm text-gray-400 mb-1 flex items-center gap-2">
+              <FaKey />
+              Account Status
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-lg font-bold">
+                {admin?.isActive ? 'Active' : 'Inactive'}
+              </span>
+              <span className={`text-xs px-2 py-1 rounded ${
+                admin?.isActive 
+                  ? 'bg-green-500/20 text-green-300' 
+                  : 'bg-red-500/20 text-red-300'
+              }`}>
+                {admin?.isActive ? 'ACTIVE' : 'INACTIVE'}
+              </span>
+            </div>
           </div>
         </div>
       </motion.div>

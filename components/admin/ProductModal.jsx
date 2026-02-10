@@ -2,42 +2,54 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { FaTimes, FaImage, FaBox, FaDollarSign, FaTag, FaList, FaCheck, FaTrash, FaWarehouse } from 'react-icons/fa';
-
-const categories = ['Sports Car', 'SUV/Truck', 'Luxury', 'Racing', 'Classic', 'Universal', 'Gaming', 'Custom'];
+import { FaTimes, FaImage, FaBox, FaDollarSign, FaTag, FaList, FaCheck, FaWarehouse, FaCog } from 'react-icons/fa';
+import { useAppContext } from '@/context/AppContext';
+import getImageUrl from '@/utils/imageUrl';
 
 export default function ProductModal({ isOpen, onClose, product, onSave }) {
+  const { categories, categoriesLoading } = useAppContext();
+  
   const [formData, setFormData] = useState({
-    name: '',
-    price: '',
-    category: '',
+    title: '',
     description: '',
-    inStock: 'true',
-    stockCount: '',
     model: '',
-    features: []
+    quantity: 0,
+    price: 0,
+    category: '',
+    brand: '',
+    material: '',
+    diameter: '',
+    compatibility: '',
+    specifications: {}
   });
   
-  const [featureInput, setFeatureInput] = useState('');
-  const [imageFiles, setImageFiles] = useState([]);
+  const [specInput, setSpecInput] = useState({ key: '', value: '' });
+  const [existingImages, setExistingImages] = useState([]);
+  const [newImages, setNewImages] = useState([]);
   const [imagePreviews, setImagePreviews] = useState([]);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
     if (product) {
       setFormData({
-        name: product.name || '',
-        price: product.price?.toString() || '',
-        category: product.category || '',
+        title: product.title || '',
         description: product.description || '',
-        inStock: product.inStock?.toString() || 'true',
-        stockCount: product.stockCount?.toString() || '',
         model: product.model || '',
-        features: product.features || []
+        quantity: product.quantity || 0,
+        price: product.price || 0,
+        category: product.category?._id || product.category || '',
+        brand: product.brand || '',
+        material: product.material || '',
+        diameter: product.diameter || '',
+        compatibility: product.compatibility || '',
+        specifications: product.specifications || {}
       });
       
       if (product.images) {
-        setImagePreviews(product.images);
+        setExistingImages(product.images);
+        // Use getImageUrl for existing image previews
+        const fullImageUrls = product.images.map(img => getImageUrl(img));
+        setImagePreviews(fullImageUrls);
       }
     } else {
       resetForm();
@@ -46,117 +58,88 @@ export default function ProductModal({ isOpen, onClose, product, onSave }) {
 
   const resetForm = () => {
     setFormData({
-      name: '',
-      price: '',
-      category: '',
+      title: '',
       description: '',
-      inStock: 'true',
-      stockCount: '',
       model: '',
-      features: []
+      quantity: 0,
+      price: 0,
+      category: '',
+      brand: '',
+      material: '',
+      diameter: '',
+      compatibility: '',
+      specifications: {}
     });
-    setFeatureInput('');
-    setImageFiles([]);
+    setSpecInput({ key: '', value: '' });
+    setExistingImages([]);
+    setNewImages([]);
     setImagePreviews([]);
   };
 
-  const handleAddFeature = () => {
-    if (featureInput.trim() && !formData.features.includes(featureInput.trim())) {
+  const handleAddSpec = () => {
+    if (specInput.key.trim() && specInput.value.trim()) {
       setFormData({
         ...formData,
-        features: [...formData.features, featureInput.trim()]
+        specifications: {
+          ...formData.specifications,
+          [specInput.key.trim()]: specInput.value.trim()
+        }
       });
-      setFeatureInput('');
+      setSpecInput({ key: '', value: '' });
     }
   };
 
-  const handleRemoveFeature = (index) => {
-    const newFeatures = [...formData.features];
-    newFeatures.splice(index, 1);
-    setFormData({ ...formData, features: newFeatures });
+  const handleRemoveSpec = (key) => {
+    const newSpecs = { ...formData.specifications };
+    delete newSpecs[key];
+    setFormData({ ...formData, specifications: newSpecs });
   };
 
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
     
-    // Check if adding these files would exceed 5 total
-    if (imageFiles.length + files.length > 5) {
-      alert('Maximum 5 images allowed');
+    if (newImages.length + files.length > 10) {
+      alert('Maximum 10 images allowed');
       return;
     }
     
-    const newImageFiles = [...imageFiles, ...files];
-    setImageFiles(newImageFiles);
+    const newImageFiles = [...newImages, ...files];
+    setNewImages(newImageFiles);
     
-    // Create previews for new files
     const newPreviews = files.map(file => URL.createObjectURL(file));
     setImagePreviews([...imagePreviews, ...newPreviews]);
   };
 
   const handleRemoveImage = (index) => {
-    const newFiles = [...imageFiles];
-    const newPreviews = [...imagePreviews];
-    
-    // Revoke object URL if it's a newly uploaded file
-    if (index >= imagePreviews.length - imageFiles.length) {
-      URL.revokeObjectURL(newPreviews[index]);
+    if (index < existingImages.length) {
+      // Remove existing image
+      setExistingImages(prev => prev.filter((_, i) => i !== index));
+      setImagePreviews(prev => prev.filter((_, i) => i !== index));
+    } else {
+      // Remove new image (blob URL)
+      const adjustedIndex = index - existingImages.length;
+      URL.revokeObjectURL(imagePreviews[index]);
+      setNewImages(prev => prev.filter((_, i) => i !== adjustedIndex));
+      setImagePreviews(prev => prev.filter((_, i) => i !== index));
     }
-    
-    newPreviews.splice(index, 1);
-    
-    // Only remove from imageFiles if it was a file (not a URL)
-    if (index < newFiles.length) {
-      newFiles.splice(index, 1);
-      setImageFiles(newFiles);
-    }
-    
-    setImagePreviews(newPreviews);
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    // Validate required fields
-    if (!formData.name || !formData.price || !formData.category || !formData.description || 
-        !formData.stockCount || !formData.model) {
-      alert('Please fill in all required fields');
+    if (!formData.title || !formData.description || !formData.model || 
+        !formData.category || formData.quantity < 0 || formData.price <= 0) {
+      alert('Please fill in all required fields correctly');
       return;
     }
 
-    // Convert price and stockCount to numbers
-    const price = parseFloat(formData.price);
-    const stockCount = parseInt(formData.stockCount);
-    
-    if (isNaN(price) || price <= 0) {
-      alert('Please enter a valid price');
-      return;
-    }
-    
-    if (isNaN(stockCount) || stockCount < 0) {
-      alert('Please enter a valid stock count');
-      return;
-    }
-
-    // Create product data object matching your structure
     const productData = {
-      name: formData.name,
-      price: price,
-      category: formData.category,
-      description: formData.description,
-      inStock: formData.inStock === 'true',
-      stockCount: stockCount,
-      model: formData.model,
-      features: formData.features,
-      images: imagePreviews.length > 0 ? imagePreviews : [
-        'https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&w=800&q=80',
-        'https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&w=800&q=80'
-      ]
+      ...formData,
+      quantity: parseInt(formData.quantity),
+      price: parseFloat(formData.price),
+      newImages: newImages,
+      existingImages: existingImages
     };
-    
-    // Add id if editing existing product
-    if (product && product.id) {
-      productData.id = product.id;
-    }
     
     onSave(productData);
     onClose();
@@ -186,29 +169,26 @@ export default function ProductModal({ isOpen, onClose, product, onSave }) {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basic Information */}
           <div>
             <h3 className="text-lg font-semibold mb-4 text-[#0295E6] flex items-center gap-2">
               <FaBox className="text-[#0295E6]" />
               Basic Information
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Product Name */}
               <div>
                 <label className="block text-sm font-medium mb-2">
-                  Product Name *
+                  Product Title *
                 </label>
                 <input
                   type="text"
                   required
                   className="w-full px-4 py-3 bg-gray-800/50 rounded-xl border border-gray-700 focus:border-[#0295E6] focus:outline-none focus:ring-2 focus:ring-[#0295E6]/30"
-                  value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  placeholder="Enter product name"
+                  value={formData.title}
+                  onChange={(e) => setFormData({...formData, title: e.target.value})}
+                  placeholder="Enter product title"
                 />
               </div>
 
-              {/* Model Number */}
               <div>
                 <label className="block text-sm font-medium mb-2">
                   Model Number *
@@ -219,11 +199,10 @@ export default function ProductModal({ isOpen, onClose, product, onSave }) {
                   className="w-full px-4 py-3 bg-gray-800/50 rounded-xl border border-gray-700 focus:border-[#0295E6] focus:outline-none focus:ring-2 focus:ring-[#0295E6]/30"
                   value={formData.model}
                   onChange={(e) => setFormData({...formData, model: e.target.value})}
-                  placeholder="Enter model number (e.g., PR-GT2023)"
+                  placeholder="Enter model number"
                 />
               </div>
 
-              {/* Price */}
               <div>
                 <label className="block text-sm font-medium mb-2 flex items-center gap-2">
                   <FaDollarSign className="text-[#0295E6]" />
@@ -241,7 +220,6 @@ export default function ProductModal({ isOpen, onClose, product, onSave }) {
                 />
               </div>
 
-              {/* Category */}
               <div>
                 <label className="block text-sm font-medium mb-2 flex items-center gap-2">
                   <FaTag className="text-[#0295E6]" />
@@ -255,55 +233,49 @@ export default function ProductModal({ isOpen, onClose, product, onSave }) {
                 >
                   <option value="">Select category</option>
                   {categories.map(cat => (
-                    <option key={cat} value={cat}>{cat}</option>
+                    <option key={cat._id} value={cat._id}>{cat.name}</option>
                   ))}
                 </select>
               </div>
             </div>
           </div>
 
-          {/* Inventory Section */}
           <div>
             <h3 className="text-lg font-semibold mb-4 text-[#0295E6] flex items-center gap-2">
               <FaWarehouse className="text-[#0295E6]" />
               Inventory Details
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Stock Count */}
               <div>
                 <label className="block text-sm font-medium mb-2">
-                  Stock Count *
+                  Quantity *
                 </label>
                 <input
                   type="number"
                   required
                   min="0"
                   className="w-full px-4 py-3 bg-gray-800/50 rounded-xl border border-gray-700 focus:border-[#0295E6] focus:outline-none focus:ring-2 focus:ring-[#0295E6]/30"
-                  value={formData.stockCount}
-                  onChange={(e) => setFormData({...formData, stockCount: e.target.value})}
-                  placeholder="Enter available stock"
+                  value={formData.quantity}
+                  onChange={(e) => setFormData({...formData, quantity: e.target.value})}
+                  placeholder="Enter quantity"
                 />
               </div>
 
-              {/* Status */}
               <div>
                 <label className="block text-sm font-medium mb-2">
-                  Stock Status *
+                  Brand
                 </label>
-                <select
-                  required
+                <input
+                  type="text"
                   className="w-full px-4 py-3 bg-gray-800/50 rounded-xl border border-gray-700 focus:border-[#0295E6] focus:outline-none focus:ring-2 focus:ring-[#0295E6]/30"
-                  value={formData.inStock}
-                  onChange={(e) => setFormData({...formData, inStock: e.target.value})}
-                >
-                  <option value="true">In Stock</option>
-                  <option value="false">Out of Stock</option>
-                </select>
+                  value={formData.brand}
+                  onChange={(e) => setFormData({...formData, brand: e.target.value})}
+                  placeholder="Enter brand"
+                />
               </div>
             </div>
           </div>
 
-          {/* Description */}
           <div>
             <h3 className="text-lg font-semibold mb-4 text-[#0295E6]">Description</h3>
             <div>
@@ -321,49 +293,96 @@ export default function ProductModal({ isOpen, onClose, product, onSave }) {
             </div>
           </div>
 
-          {/* Features */}
           <div>
             <h3 className="text-lg font-semibold mb-4 text-[#0295E6] flex items-center gap-2">
-              <FaList className="text-[#0295E6]" />
-              Product Features
+              <FaCog className="text-[#0295E6]" />
+              Specifications
             </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Material
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-3 bg-gray-800/50 rounded-xl border border-gray-700 focus:border-[#0295E6] focus:outline-none focus:ring-2 focus:ring-[#0295E6]/30"
+                  value={formData.material}
+                  onChange={(e) => setFormData({...formData, material: e.target.value})}
+                  placeholder="Enter material"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Diameter
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-3 bg-gray-800/50 rounded-xl border border-gray-700 focus:border-[#0295E6] focus:outline-none focus:ring-2 focus:ring-[#0295E6]/30"
+                  value={formData.diameter}
+                  onChange={(e) => setFormData({...formData, diameter: e.target.value})}
+                  placeholder="Enter diameter"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium mb-2">
+                  Compatibility
+                </label>
+                <input
+                  type="text"
+                  className="w-full px-4 py-3 bg-gray-800/50 rounded-xl border border-gray-700 focus:border-[#0295E6] focus:outline-none focus:ring-2 focus:ring-[#0295E6]/30"
+                  value={formData.compatibility}
+                  onChange={(e) => setFormData({...formData, compatibility: e.target.value})}
+                  placeholder="Enter compatibility details"
+                />
+              </div>
+            </div>
+
             <div>
               <label className="block text-sm font-medium mb-2">
-                Add Features (e.g., Carbon Fiber, LED Display, Quick Release)
+                Additional Specifications
               </label>
               <div className="flex gap-2 mb-3">
                 <input
                   type="text"
                   className="flex-1 px-4 py-3 bg-gray-800/50 rounded-xl border border-gray-700 focus:border-[#0295E6] focus:outline-none focus:ring-2 focus:ring-[#0295E6]/30"
-                  value={featureInput}
-                  onChange={(e) => setFeatureInput(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddFeature())}
-                  placeholder="Enter a feature and press Enter"
+                  value={specInput.key}
+                  onChange={(e) => setSpecInput({...specInput, key: e.target.value})}
+                  placeholder="Specification key"
+                />
+                <input
+                  type="text"
+                  className="flex-1 px-4 py-3 bg-gray-800/50 rounded-xl border border-gray-700 focus:border-[#0295E6] focus:outline-none focus:ring-2 focus:ring-[#0295E6]/30"
+                  value={specInput.value}
+                  onChange={(e) => setSpecInput({...specInput, value: e.target.value})}
+                  placeholder="Specification value"
                 />
                 <button
                   type="button"
-                  onClick={handleAddFeature}
+                  onClick={handleAddSpec}
                   className="px-4 py-3 bg-[#0295E6] hover:bg-[#0284c6] rounded-xl transition-colors whitespace-nowrap"
                 >
-                  Add Feature
+                  Add
                 </button>
               </div>
               
-              {/* Features List */}
-              {formData.features.length > 0 && (
+              {Object.keys(formData.specifications).length > 0 && (
                 <div className="mb-4">
-                  <label className="block text-sm font-medium mb-2">Current Features:</label>
-                  <div className="flex flex-wrap gap-2">
-                    {formData.features.map((feature, index) => (
+                  <label className="block text-sm font-medium mb-2">Current Specifications:</label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {Object.entries(formData.specifications).map(([key, value], index) => (
                       <div
-                        key={index}
-                        className="flex items-center gap-2 px-3 py-2 bg-gray-800/50 rounded-lg border border-gray-700"
+                        key={key}
+                        className="flex items-center justify-between px-3 py-2 bg-gray-800/50 rounded-lg border border-gray-700"
                       >
-                        <FaCheck className="text-[#0295E6] text-xs" />
-                        <span className="text-sm">{feature}</span>
+                        <div>
+                          <span className="font-medium text-[#0295E6]">{key}:</span>
+                          <span className="ml-2">{value}</span>
+                        </div>
                         <button
                           type="button"
-                          onClick={() => handleRemoveFeature(index)}
+                          onClick={() => handleRemoveSpec(key)}
                           className="text-red-400 hover:text-red-300 ml-2"
                         >
                           ×
@@ -376,7 +395,6 @@ export default function ProductModal({ isOpen, onClose, product, onSave }) {
             </div>
           </div>
 
-          {/* Image Upload */}
           <div>
             <h3 className="text-lg font-semibold mb-4 text-[#0295E6] flex items-center gap-2">
               <FaImage className="text-[#0295E6]" />
@@ -384,7 +402,7 @@ export default function ProductModal({ isOpen, onClose, product, onSave }) {
             </h3>
             <div>
               <label className="block text-sm font-medium mb-2">
-                Upload Product Images (Max 5 images) *
+                Upload Product Images (Max 10 images)
               </label>
               <div className="mb-4">
                 <input
@@ -404,12 +422,10 @@ export default function ProductModal({ isOpen, onClose, product, onSave }) {
                     <FaImage className="text-3xl mb-2" />
                     <span className="font-medium">Click to upload images</span>
                     <span className="text-xs mt-1">PNG, JPG, GIF up to 5MB each</span>
-                    <span className="text-xs text-gray-500 mt-1">First image will be used as main display</span>
                   </div>
                 </button>
               </div>
               
-              {/* Image Previews */}
               {imagePreviews.length > 0 && (
                 <div>
                   <label className="block text-sm font-medium mb-2">Image Previews:</label>
@@ -420,6 +436,10 @@ export default function ProductModal({ isOpen, onClose, product, onSave }) {
                           src={preview}
                           alt={`Preview ${index + 1}`}
                           className="w-full h-32 object-cover rounded-lg border border-gray-700"
+                          onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = '/placeholder-product.jpg';
+                          }}
                         />
                         <button
                           type="button"
@@ -436,19 +456,9 @@ export default function ProductModal({ isOpen, onClose, product, onSave }) {
                   </div>
                 </div>
               )}
-              
-              {/* Default Images Info */}
-              {imagePreviews.length === 0 && (
-                <div className="mt-2">
-                  <p className="text-xs text-gray-500">
-                    If no images are uploaded, default product images will be used.
-                  </p>
-                </div>
-              )}
             </div>
           </div>
 
-          {/* Form Actions */}
           <div className="flex justify-end gap-4 pt-6 border-t border-gray-700/50 sticky bottom-0 bg-gray-900 pb-2">
             <button
               type="button"

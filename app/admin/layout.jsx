@@ -11,7 +11,6 @@ export default function AdminLayout({ children }) {
   const pathname = usePathname();
   const { isAuthenticated: contextAuth, authLoading, logout } = useAppContext();
   
-  const [isLoading, setIsLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -30,8 +29,6 @@ export default function AdminLayout({ children }) {
       if (accessToken && admin) {
         setIsAuthenticated(true);
       }
-      
-      setIsLoading(false);
     };
 
     
@@ -57,7 +54,6 @@ export default function AdminLayout({ children }) {
   useEffect(() => {
     if (!authLoading && contextAuth) {
       setIsAuthenticated(true);
-      setIsLoading(false);
     }
   }, [contextAuth, authLoading]);
 
@@ -70,17 +66,6 @@ export default function AdminLayout({ children }) {
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
   };
-
-  if (isLoading || authLoading) {
-    return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-center">
-          <div className="w-16 h-16 mx-auto mb-4 border-4 border-green-500 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-gray-400">Loading admin panel...</p>
-        </div>
-      </div>
-    );
-  }
 
   if (!isAuthenticated && pathname !== '/admin/login') {
     return null;
