@@ -1,106 +1,104 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
-import { FaWhatsapp, FaTimes, FaTruck } from 'react-icons/fa';
+import { FaWhatsapp, FaTimes, FaShieldAlt } from 'react-icons/fa';
+import getImageUrl from '@/utils/imageUrl';
 
-export default function OrderModal({ isOpen, onClose, product, quantity }) {
-  const totalAmount = (product?.price * quantity).toFixed(2);
-  const whatsappMessage = `Hello, I want to order:\nProduct: ${product?.name}\nModel: ${product?.model}\nQuantity: ${quantity}\nTotal: $${totalAmount}\nDelivery Method: Cash on Delivery`;
+export default function OrderModal({ isOpen, onClose, product, quantity = 1 }) {
+  if (!product) return null;
+
+  const totalAmount = (product.price * quantity).toFixed(2);
+  const contactNumber = "1234567890"; // Replace with your actual WhatsApp number (no +)
+  
+  const handleOrderClick = () => {
+    const message = encodeURIComponent(
+      `*New Order Request*\n\n` +
+      `Product: ${product.title || product.name}\n` +
+      `Model: ${product.model}\n` +
+      `Price: $${product.price}\n` +
+      `Quantity: ${quantity}\n` +
+      `*Total: $${totalAmount}*\n\n` +
+      `Please confirm availability and delivery details.`
+    );
+    
+    window.open(`https://wa.me/${contactNumber}?text=${message}`, '_blank');
+    onClose();
+  };
+
+  const imageSrc = product.images && product.images.length > 0 
+    ? getImageUrl(product.images[0]) 
+    : '/placeholder-product.jpg';
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          onClick={onClose}
-        >
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
-          
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          {/* Backdrop */}
           <motion.div
-            initial={{ scale: 0.9, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.9, opacity: 0, y: 20 }}
-            transition={{ type: "spring", damping: 25 }}
-            className="relative bg-gray-900/90 backdrop-blur-md rounded-2xl p-6 w-full max-w-md border border-gray-700/50"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button
-              onClick={onClose}
-              className="absolute right-4 top-4 p-2 hover:bg-gray-800/50 rounded-full transition-colors"
-            >
-              <FaTimes />
-            </button>
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={onClose}
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+          />
 
-            <div className="text-center mb-6">
-              <h3 className="text-2xl font-bold mb-2">Complete Your Order</h3>
-              <div className="flex items-center justify-center gap-2 text-[#0295E6]">
-                <FaTruck />
-                <span>Cash on Delivery Available</span>
-              </div>
+          {/* Modal Content */}
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0, y: 50 }}
+            animate={{ scale: 1, opacity: 1, y: 0 }}
+            exit={{ scale: 0.9, opacity: 0, y: 50 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className="relative w-full max-w-md bg-gray-900 border border-gray-700 rounded-3xl overflow-hidden shadow-2xl shadow-blue-500/10"
+          >
+            {/* Header */}
+            <div className="bg-[#0295E6] p-6 text-center relative overflow-hidden">
+               <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-20"></div>
+               <button onClick={onClose} className="absolute top-4 right-4 text-white/80 hover:text-white transition-colors bg-black/20 rounded-full p-2">
+                 <FaTimes />
+               </button>
+               <h3 className="text-2xl font-bold text-white relative z-10">Confirm Order</h3>
+               <p className="text-blue-100 text-sm mt-1 relative z-10">Complete your purchase via WhatsApp</p>
             </div>
 
-            <div className="mb-6 p-4 bg-gray-800/50 rounded-xl">
-              <div className="flex items-center gap-4 mb-4">
-                <div className="w-20 h-20 rounded overflow-hidden">
+            <div className="p-6">
+              {/* Product Summary */}
+              <div className="flex gap-4 mb-6 bg-gray-800/50 p-3 rounded-2xl border border-gray-700/50">
+                <div className="w-20 h-20 rounded-xl overflow-hidden flex-shrink-0 bg-gray-800">
                   <img
-                    src={product?.images[0]}
-                    alt={product?.name}
+                    src={imageSrc}
+                    alt={product.title}
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <div className="flex-1">
-                  <h4 className="font-semibold">{product?.name}</h4>
-                  <p className="text-sm text-gray-400">Model: {product?.model}</p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${product?.inStock ? 'bg-[#0295E6]/30 text-[#0295E6]' : 'bg-red-900/30 text-red-300'}`}>
-                      {product?.inStock ? 'In Stock' : 'Out of Stock'}
-                    </span>
-                  </div>
+                <div className="flex flex-col justify-center">
+                  <h4 className="font-semibold text-white line-clamp-1">{product.title || product.name}</h4>
+                  <p className="text-gray-400 text-sm mb-1">{product.model}</p>
+                  <span className="text-[#0295E6] font-bold">${product.price} x {quantity}</span>
                 </div>
               </div>
-              
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Price:</span>
-                  <span>${product?.price}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Quantity:</span>
-                  <span>{quantity}</span>
-                </div>
-                <div className="flex justify-between border-t border-gray-700 pt-2">
-                  <span className="font-semibold">Total Amount:</span>
-                  <span className="text-2xl font-bold text-[#0295E6]">${totalAmount}</span>
-                </div>
+
+              {/* Total Calculation */}
+              <div className="flex justify-between items-center py-4 border-t border-b border-gray-800 mb-6">
+                 <span className="text-gray-400 font-medium">Total Amount</span>
+                 <span className="text-3xl font-bold text-white">${totalAmount}</span>
               </div>
-            </div>
 
-            <div className="mb-6">
-              <h4 className="font-semibold mb-2">Description:</h4>
-              <p className="text-gray-300 text-sm">{product?.description}</p>
-            </div>
+              {/* Action Button */}
+              <button
+                onClick={handleOrderClick}
+                className="w-full group flex items-center justify-center gap-3 bg-green-600 hover:bg-green-500 text-white py-4 rounded-xl text-lg font-bold transition-all duration-300 hover:shadow-lg hover:shadow-green-500/20 transform hover:-translate-y-1"
+              >
+                <FaWhatsapp className="text-2xl group-hover:scale-110 transition-transform" />
+                Proceed to WhatsApp
+              </button>
 
-            <a
-              href={`https://wa.me/+1234567890?text=${encodeURIComponent(whatsappMessage)}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={onClose}
-              className="flex items-center justify-center gap-3 bg-green-600 hover:bg-green-700 text-white px-8 py-4 rounded-xl text-lg font-semibold transition-all duration-300 hover:scale-105 w-full"
-            >
-              <FaWhatsapp className="text-2xl" />
-              Order Now on WhatsApp
-            </a>
-
-            <div className="mt-6 text-center">
-              <p className="text-sm text-gray-400">
-                Click above to open WhatsApp and complete your order
-              </p>
+              <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-500">
+                <FaShieldAlt />
+                <span>Secure direct communication with seller</span>
+              </div>
             </div>
           </motion.div>
-        </motion.div>
+        </div>
       )}
     </AnimatePresence>
   );

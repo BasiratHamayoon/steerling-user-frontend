@@ -1,64 +1,49 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { FaExclamationTriangle, FaCheck, FaTimes } from 'react-icons/fa';
+import { FaExclamationTriangle, FaCheckCircle, FaTimes, FaShieldAlt } from 'react-icons/fa';
 
 export default function ConfirmationModal({ isOpen, onClose, onConfirm, title, message, type = 'warning' }) {
-  const getIcon = () => {
-    switch (type) {
-      case 'success':
-        return <FaCheck className="text-green-400 text-4xl" />;
-      case 'danger':
-        return <FaExclamationTriangle className="text-red-400 text-4xl" />;
-      default:
-        return <FaExclamationTriangle className="text-yellow-400 text-4xl" />;
-    }
-  };
-
-  const getButtonColor = () => {
-    switch (type) {
-      case 'success':
-        return 'bg-green-600 hover:bg-green-700';
-      case 'danger':
-        return 'bg-red-600 hover:bg-red-700';
-      default:
-        return 'bg-yellow-600 hover:bg-yellow-700';
-    }
-  };
-
   if (!isOpen) return null;
 
+  const isDanger = type === 'danger';
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
+      
       <motion.div
         initial={{ scale: 0.9, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
-        className="bg-gray-900 rounded-2xl p-6 w-full max-w-md border border-gray-700/50"
+        className="relative bg-gray-900 border border-gray-800 rounded-3xl p-8 w-full max-w-md shadow-2xl overflow-hidden text-center"
       >
-        <div className="text-center">
-          <div className="mb-4 flex justify-center">
-            {getIcon()}
-          </div>
-          
-          <h3 className="text-xl font-bold mb-2">{title}</h3>
-          <p className="text-gray-400 mb-6">{message}</p>
+        {/* Glow Effect */}
+        <div className={`absolute top-0 left-0 w-full h-1 bg-gradient-to-r ${isDanger ? 'from-red-600 to-orange-600' : 'from-green-600 to-emerald-600'}`} />
+        
+        <div className={`w-20 h-20 mx-auto rounded-full flex items-center justify-center mb-6 ${isDanger ? 'bg-red-900/20 text-red-500' : 'bg-green-900/20 text-green-500'}`}>
+           {isDanger ? <FaExclamationTriangle className="text-4xl" /> : <FaCheckCircle className="text-4xl" />}
+        </div>
 
-          <div className="flex justify-center gap-4">
-            <button
-              onClick={onClose}
-              className="px-6 py-3 bg-gray-800 hover:bg-gray-700 rounded-xl transition-colors flex items-center gap-2"
-            >
-              <FaTimes />
-              Cancel
-            </button>
-            <button
-              onClick={onConfirm}
-              className={`px-6 py-3 rounded-xl transition-colors flex items-center gap-2 ${getButtonColor()}`}
-            >
-              <FaCheck />
-              Confirm
-            </button>
-          </div>
+        <h3 className="text-2xl font-bold text-white mb-2">{title}</h3>
+        <p className="text-gray-400 mb-8 leading-relaxed">{message}</p>
+
+        <div className="flex gap-4">
+          <button
+            onClick={onClose}
+            className="flex-1 py-3 rounded-xl border border-gray-700 text-gray-300 hover:bg-gray-800 transition-colors font-medium"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={onConfirm}
+            className={`flex-1 py-3 rounded-xl text-white font-bold shadow-lg transition-all transform hover:-translate-y-1 ${
+                isDanger 
+                ? 'bg-gradient-to-r from-red-600 to-red-700 hover:shadow-red-900/30' 
+                : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:shadow-green-900/30'
+            }`}
+          >
+            Confirm
+          </button>
         </div>
       </motion.div>
     </div>

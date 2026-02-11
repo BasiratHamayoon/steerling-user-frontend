@@ -1,122 +1,245 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FiSearch, FiX } from 'react-icons/fi';
-import { FaWhatsapp } from 'react-icons/fa';
+import { FiSearch, FiX, FiArrowRight, FiPackage } from 'react-icons/fi';
+import { FaFire, FaBoxOpen } from 'react-icons/fa';
+import { useRouter } from 'next/navigation';
 import { useAppContext } from '@/context/AppContext';
-import { products } from '@/data/products';
+import getImageUrl from '@/utils/imageUrl';
 
 export default function SearchModal() {
-  const { isSearchOpen, setIsSearchOpen, searchQuery, setSearchQuery } = useAppContext();
-  const [searchResults, setSearchResults] = useState([]);
+  const { isSearchOpen, setIsSearchOpen, products } = useAppContext();
+  const [query, setQuery] = useState('');
+  const [results, setResults] = useState([]);
+  const inputRef = useRef(null);
+  const router = useRouter();
 
+  // Focus input when modal opens
+  useEffect(() => {
+    if (isSearchOpen) {
+      setTimeout(() => inputRef.current?.focus(), 100);
+      // Reset search when opening
+      setQuery('');
+      setResults([]);
+    }
+  }, [isSearchOpen]);
+
+  // Handle ESC key
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === 'Escape') setIsSearchOpen(false);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [setIsSearchOpen]);
+
+  // Frontend Search Logic
   const handleSearch = (value) => {
-    setSearchQuery(value);
-    if (value.trim() === '') {
-      setSearchResults([]);
+    setQuery(value);
+    
+    if (!value.trim()) {
+      setResults([]);
       return;
     }
-    
-    const results = products.filter(product =>
-      product.name.toLowerCase().includes(value.toLowerCase()) ||
-      product.category.toLowerCase().includes(value.toLowerCase()) ||
-      product.description.toLowerCase().includes(value.toLowerCase())
-    );
-    setSearchResults(results.slice(0, 5)); // Limit to 5 results
+
+    // Filter from the 'products' array coming from Context (Backend data)
+    const filtered = products.filter(product => {
+      const searchTerm = value.toLowerCase();
+      const name = (product.title || product.name || '').toLowerCase();
+      const model = (product.model || '').toLowerCase();
+      const category = (product.category?.name || '').toLowerCase();
+      
+      return name.includes(searchTerm) || 
+             model.includes(searchTerm) || 
+             category.includes(searchTerm);
+    });
+
+    setResults(filtered.slice(0, 8)); // Limit to 8 results for cleaner UI
+  };
+
+  const navigateToProduct = (id) => {
+    setIsSearchOpen(false);
+    router.push(`/user/products/${id}`);
+  };
+
+  // Animation Variants
+  const containerVariants = {
+    hidden: { opacity: 0, scale: 0.95 },
+    visible: { opacity: 1, scale: 1, transition: { duration: 0.2 } },
+    exit: { opacity: 0, scale: 0.95, transition: { duration: 0.15 } }
+  };
+
+  const listVariants = {
+    hidden: { opacity: 0 },
+    visible: { opacity: 1, transition: { staggerChildren: 0.05 } }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, x: -10 },
+    visible: { opacity: 1, x: 0 }
   };
 
   return (
     <AnimatePresence>
       {isSearchOpen && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          onClick={() => setIsSearchOpen(false)}
-        >
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-          
+        <div className="fixed inset-0 z-[100] flex items-start justify-center pt-[10vh] px-4">
+          {/* Backdrop */}
           <motion.div
-            initial={{ scale: 0.9, opacity: 0, y: 20 }}
-            animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.9, opacity: 0, y: 20 }}
-            transition={{ type: "spring", damping: 25 }}
-            className="relative bg-gray-900/90 backdrop-blur-md rounded-2xl p-6 w-full max-w-2xl max-h-[80vh] overflow-y-auto border border-gray-700/50"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+            onClick={() => setIsSearchOpen(false)}
+          />
+
+          {/* Modal Container */}
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            className="relative w-full max-w-3xl bg-gray-900 border border-gray-700 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[70vh]"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-bold">Search Products</h3>
+            {/* Search Header */}
+            <div className="relative border-b border-gray-800">
+              <div className="absolute left-6 top-1/2 -translate-y-1/2 text-[#0295E6] text-xl">
+                <FiSearch />
+              </div>
+              <input
+                ref={inputRef}
+                type="text"
+                placeholder="Search products, categories, or models..."
+                className="w-full bg-transparent text-white text-lg placeholder-gray-500 py-6 pl-16 pr-16 focus:outline-none"
+                value={query}
+                onChange={(e) => handleSearch(e.target.value)}
+              />
               <button
                 onClick={() => setIsSearchOpen(false)}
-                className="p-2 hover:bg-gray-800/50 rounded-full transition-colors"
+                className="absolute right-4 top-1/2 -translate-y-1/2 p-2 text-gray-400 hover:text-white bg-gray-800/50 hover:bg-gray-700 rounded-lg transition-all text-xs border border-gray-700"
               >
-                <FiX className="text-xl" />
+                ESC
               </button>
             </div>
-            
-            <div className="relative mb-6">
-              <FiSearch className="absolute left-4 top-3.5 text-gray-400 text-xl" />
-              <input
-                type="text"
-                placeholder="Search for steering wheels, categories, etc..."
-                className="w-full pl-12 pr-4 py-3.5 bg-gray-800/50 rounded-xl border border-gray-600 focus:border-[#0295E6] focus:outline-none focus:ring-2 focus:ring-[#0295E6]/30 text-white"
-                value={searchQuery}
-                onChange={(e) => handleSearch(e.target.value)}
-                autoFocus
-              />
+
+            {/* Results Area */}
+            <div className="overflow-y-auto custom-scrollbar p-2">
+              
+              {/* State: Empty Search (Show Suggestions) */}
+              {!query && (
+                <div className="py-12 px-6 text-center">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-800/50 mb-4 text-gray-600">
+                     <FiSearch className="text-2xl" />
+                  </div>
+                  <p className="text-gray-400 text-sm">Start typing to search across {products.length} products</p>
+                  
+                  {/* Quick Suggestions */}
+                  <div className="mt-8">
+                     <p className="text-xs font-bold text-gray-600 uppercase tracking-wider mb-4">Popular Categories</p>
+                     <div className="flex flex-wrap justify-center gap-3">
+                        {['Carbon Fiber', 'Alcantara', 'LED Display', 'Leather'].map((tag) => (
+                           <button 
+                             key={tag}
+                             onClick={() => handleSearch(tag)}
+                             className="px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-full text-xs text-gray-300 hover:text-white border border-gray-700 transition-colors"
+                           >
+                             {tag}
+                           </button>
+                        ))}
+                     </div>
+                  </div>
+                </div>
+              )}
+
+              {/* State: No Results */}
+              {query && results.length === 0 && (
+                <div className="py-12 text-center">
+                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-900/10 mb-4 text-red-500">
+                     <FaBoxOpen className="text-2xl" />
+                  </div>
+                  <h3 className="text-white font-medium mb-1">No results found</h3>
+                  <p className="text-gray-500 text-sm">We couldn't find anything matching "{query}"</p>
+                </div>
+              )}
+
+              {/* State: Show Results */}
+              {query && results.length > 0 && (
+                <motion.div 
+                  variants={listVariants}
+                  initial="hidden"
+                  animate="visible"
+                  className="space-y-1"
+                >
+                  <div className="px-4 py-2 text-xs font-bold text-gray-500 uppercase tracking-wider">
+                    Products ({results.length})
+                  </div>
+                  
+                  {results.map((product) => {
+                     const imageSrc = product.images?.[0] ? getImageUrl(product.images[0]) : '/placeholder-product.jpg';
+                     
+                     return (
+                      <motion.div
+                        key={product._id || product.id}
+                        variants={itemVariants}
+                        onClick={() => navigateToProduct(product._id || product.id)}
+                        className="group flex items-center gap-4 p-3 rounded-xl hover:bg-gray-800/80 cursor-pointer transition-all border border-transparent hover:border-gray-700"
+                      >
+                        {/* Thumbnail */}
+                        <div className="w-14 h-14 rounded-lg overflow-hidden bg-gray-800 flex-shrink-0 relative">
+                           <img 
+                             src={imageSrc} 
+                             alt={product.title} 
+                             className="w-full h-full object-cover" 
+                           />
+                        </div>
+
+                        {/* Details */}
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-gray-200 font-medium truncate group-hover:text-[#0295E6] transition-colors">
+                            {product.title || product.name}
+                          </h4>
+                          <div className="flex items-center gap-2 mt-0.5">
+                             <span className="text-xs text-gray-500">{product.model}</span>
+                             {product.category && (
+                                <>
+                                  <span className="w-1 h-1 rounded-full bg-gray-600" />
+                                  <span className="text-xs text-gray-500">{product.category.name}</span>
+                                </>
+                             )}
+                          </div>
+                        </div>
+
+                        {/* Price & Action */}
+                        <div className="text-right flex items-center gap-4">
+                           <div className="flex flex-col items-end">
+                             <span className="text-[#0295E6] font-bold text-sm">${product.price}</span>
+                             <span className={`text-[10px] px-1.5 py-0.5 rounded ${product.inStock || product.stockStatus === 'inStock' ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
+                                {product.inStock || product.stockStatus === 'inStock' ? 'In Stock' : 'Out Stock'}
+                             </span>
+                           </div>
+                           <FiArrowRight className="text-gray-600 group-hover:text-white transition-colors" />
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </motion.div>
+              )}
             </div>
 
-            {searchResults.length > 0 && (
-              <div className="mb-6">
-                <h4 className="font-semibold mb-3">Search Results</h4>
-                <div className="space-y-3">
-                  {searchResults.map((product) => (
-                    <motion.div
-                      key={product.id}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      className="flex items-center gap-4 p-3 bg-gray-800/30 rounded-lg hover:bg-gray-800/50 transition-colors cursor-pointer"
-                      onClick={() => {
-                        window.location.href = `/products/${product.id}`;
-                        setIsSearchOpen(false);
-                      }}
-                    >
-                      <div className="w-16 h-16 rounded overflow-hidden">
-                        <img
-                          src={product.images[0]}
-                          alt={product.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <h5 className="font-medium">{product.name}</h5>
-                        <p className="text-sm text-gray-400">${product.price}</p>
-                        <p className="text-xs text-gray-500">{product.category}</p>
-                      </div>
-                      <div className={`px-2 py-1 rounded text-xs ${product.inStock ? 'bg-[#0295E6]/30 text-[#0295E6]' : 'bg-red-900/30 text-red-300'}`}>
-                        {product.inStock ? 'In Stock' : 'Out of Stock'}
-                      </div>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {searchQuery && searchResults.length === 0 && (
-              <div className="text-center py-8">
-                <p className="text-gray-400">No products found for "{searchQuery}"</p>
-              </div>
-            )}
-
-            {!searchQuery && (
-              <div className="text-center py-8">
-                <p className="text-gray-400">Type to search for products</p>
-              </div>
-            )}
+            {/* Footer */}
+            <div className="bg-gray-900 border-t border-gray-800 px-6 py-3 flex items-center justify-between text-xs text-gray-500">
+               <div className="flex gap-4">
+                 <span className="flex items-center gap-1"><kbd className="bg-gray-800 px-1.5 py-0.5 rounded text-gray-400 font-sans">↑↓</kbd> Navigate</span>
+                 <span className="flex items-center gap-1"><kbd className="bg-gray-800 px-1.5 py-0.5 rounded text-gray-400 font-sans">↵</kbd> Select</span>
+                 <span className="flex items-center gap-1"><kbd className="bg-gray-800 px-1.5 py-0.5 rounded text-gray-400 font-sans">esc</kbd> Close</span>
+               </div>
+               <div className="hidden sm:block">
+                 <span className="text-[#0295E6]">Steer</span>Flux Search
+               </div>
+            </div>
           </motion.div>
-        </motion.div>
+        </div>
       )}
     </AnimatePresence>
   );
