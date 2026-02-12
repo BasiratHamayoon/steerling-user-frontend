@@ -1,4 +1,5 @@
 import { FaWhatsapp, FaFacebook, FaInstagram, FaTwitter } from 'react-icons/fa';
+import Image from 'next/image';
 import { contactInfo } from '@/data/contactInfo';
 
 export default function Footer() {
@@ -12,10 +13,17 @@ export default function Footer() {
           
           {/* 1. Brand Section */}
           <div className="flex flex-col items-center md:items-start text-center md:text-left space-y-4">
-            <div className="text-4xl font-extrabold tracking-tight">
-              <span className="text-[#0295E6]">Steer</span>
-              <span className="text-white">Flux</span>
+            
+            {/* LOGO REPLACEMENT */}
+            <div className="relative h-16 w-56 mb-2">
+              <Image 
+                src="/logo.png" 
+                alt="SteerFlux" 
+                fill
+                className="object-contain object-center md:object-left"
+              />
             </div>
+
             <p className="text-gray-400 text-sm leading-relaxed max-w-xs">
               Thank you for visiting our store. Premium steering wheels designed for every vehicle, crafted for perfection.
             </p>

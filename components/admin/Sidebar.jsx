@@ -13,6 +13,7 @@ import {
   FaSignOutAlt,
   FaStore
 } from 'react-icons/fa';
+import Image from 'next/image';
 
 const menuItems = [
   { name: 'Dashboard', href: '/admin/dashboard', icon: <FaTachometerAlt /> },
@@ -59,18 +60,9 @@ export default function AdminSidebar({ isOpen, onClose, isMobile }) {
           >
             <div className="h-full flex flex-col">
               {/* Header */}
-              <div className="p-6 border-b border-gray-700/50">
+              <div className="">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-[#0295E6] to-[#02b3e6] rounded-lg flex items-center justify-center">
-                      <FaStore className="text-white" />
-                    </div>
-                    <div>
-                      <h2 className="font-bold text-lg">
-                        <span className="text-[#0295E6]">SteerFlux</span>
-                      </h2>
-                      <p className="text-xs text-gray-400">Admin Panel</p>
-                    </div>
+                  <div className="flex items-center gap-3"> 
                   </div>
                   {isMobile && (
                     <button
@@ -80,11 +72,6 @@ export default function AdminSidebar({ isOpen, onClose, isMobile }) {
                       <FaTimes />
                     </button>
                   )}
-                </div>
-                
-                <div className="mt-4 p-3 bg-gradient-to-r from-[#0295E6]/10 to-[#02b3e6]/5 rounded-lg border border-[#0295E6]/20">
-                  <p className="text-sm text-[#0295E6] font-medium">Welcome back!</p>
-                  <p className="text-xs text-gray-400 mt-1">Manage your store efficiently</p>
                 </div>
               </div>
 

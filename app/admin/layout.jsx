@@ -91,7 +91,7 @@ export default function AdminLayout({ children }) {
       
       <main 
         className={`
-          pt-16 transition-all duration-300
+          pt-18 transition-all duration-300
           ${isSidebarOpen && !isMobile ? 'md:ml-64' : ''}
         `}
       >

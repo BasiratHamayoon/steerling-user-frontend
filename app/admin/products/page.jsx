@@ -49,7 +49,7 @@ export default function AdminProductsPage() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [currentPage]);
 
-  // Debounce logic
+  // Debounce utility
   function debounce(func, wait) {
     let timeout;
     return function (...args) {
@@ -78,14 +78,13 @@ export default function AdminProductsPage() {
         setSearchLoading(false);
       }
     }, 300),
-    []
+    [searchProducts]
   );
 
   useEffect(() => {
     debouncedSearch(searchTerm);
   }, [searchTerm, debouncedSearch]);
 
-  // --- MISSING FUNCTION ADDED HERE ---
   const handleSearchChange = (e) => {
     setSearchTerm(e.target.value);
   };
@@ -202,7 +201,7 @@ export default function AdminProductsPage() {
           </button>
         </form>
 
-        {/* Suggestions Dropdown */}
+        {/* Suggestions Dropdown - ✅ Shows newly created products because they now exist in DB */}
         {showSuggestions && (
           <div className="absolute top-full left-0 right-0 mt-2 bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl z-50 overflow-hidden">
             {searchLoading ? (

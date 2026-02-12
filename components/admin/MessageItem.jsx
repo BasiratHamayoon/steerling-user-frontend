@@ -1,126 +1,66 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { FaUser, FaClock, FaEnvelope, FaPhone, FaReply, FaCheckCircle, FaEye, FaEyeSlash } from 'react-icons/fa';
+import { FaClock, FaCheckDouble, FaReply } from 'react-icons/fa';
 
-export default function MessageItem({ message, isSelected, onClick, onStatusToggle, onArchive, onDelete }) {
-  const formatDate = (dateString) => {
-    if (!dateString) return 'N/A';
+export default function MessageItem({ message, isSelected, onClick }) {
+  
+  // Helper to format concise time
+  const getTimeDisplay = (dateString) => {
     const date = new Date(dateString);
     const now = new Date();
-    const diffInHours = (now - date) / (1000 * 60 * 60);
+    const diff = (now - date) / (1000 * 60 * 60 * 24); // Days
     
-    if (diffInHours < 24) {
-      if (diffInHours < 1) {
-        const minutes = Math.floor(diffInHours * 60);
-        return `${minutes} min${minutes !== 1 ? 's' : ''} ago`;
-      }
-      return `${Math.floor(diffInHours)} hour${Math.floor(diffInHours) !== 1 ? 's' : ''} ago`;
-    }
-    
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    if (diff < 1) return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    if (diff < 7) return date.toLocaleDateString([], { weekday: 'short' });
+    return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
   };
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'unread':
-        return 'bg-red-500/20 text-red-300 border-red-500/30';
-      case 'read':
-        return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
-      case 'replied':
-        return 'bg-green-500/20 text-green-300 border-green-500/30';
-      case 'archived':
-        return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
-      default:
-        return 'bg-gray-500/20 text-gray-300';
-    }
-  };
-
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'unread':
-        return <FaEyeSlash className="text-red-400 text-xs" />;
-      case 'read':
-        return <FaEye className="text-blue-400 text-xs" />;
-      case 'replied':
-        return <FaReply className="text-green-400 text-xs" />;
-      case 'archived':
-        return <FaCheckCircle className="text-gray-400 text-xs" />;
-      default:
-        return <FaEnvelope className="text-gray-400 text-xs" />;
-    }
-  };
+  const isUnread = message.status === 'unread';
+  const isReplied = message.status === 'replied';
 
   return (
-    <motion.div
-      initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: 1, x: 0 }}
+    <div 
       onClick={onClick}
-      className={`p-4 border-b border-gray-700/30 cursor-pointer transition-all hover:bg-gray-700/20 group ${
-        isSelected ? 'bg-gradient-to-r from-[#0295E6]/10 to-[#02b3e6]/5' : ''
-      } ${message.status === 'unread' ? 'border-l-4 border-red-500 bg-red-500/5' : ''}`}
+      className={`
+        relative p-4 border-b border-gray-800/50 cursor-pointer transition-all duration-200 group
+        ${isSelected 
+          ? 'bg-[#0295E6]/10 border-l-4 border-l-[#0295E6]' 
+          : 'hover:bg-gray-800/50 border-l-4 border-l-transparent'
+        }
+      `}
     >
-      <div className="flex items-start justify-between mb-2">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
-            message.status === 'unread' 
-              ? 'bg-red-500/10 border border-red-500/20' 
-              : 'bg-gray-800'
-          }`}>
-            {message.name ? (
-              <span className="font-semibold text-white">
-                {message.name.charAt(0).toUpperCase()}
-              </span>
-            ) : (
-              <FaUser className="text-gray-400" />
-            )}
-          </div>
-          <div className="min-w-0">
-            <h3 className="font-semibold truncate" title={message.name || 'Anonymous'}>
-              {message.name || 'Anonymous'}
-            </h3>
-            <p className="text-sm text-gray-400 truncate" title={message.email}>
-              {message.email}
-            </p>
-          </div>
-        </div>
-        <span className={`text-xs px-2 py-1 rounded-full border flex items-center gap-1 flex-shrink-0 ${getStatusColor(message.status)}`}>
-          {getStatusIcon(message.status)}
-          {message.status.charAt(0).toUpperCase() + message.status.slice(1)}
+      {/* Unread Indicator Dot */}
+      {isUnread && (
+        <div className="absolute top-4 right-4 w-2.5 h-2.5 bg-[#0295E6] rounded-full shadow-[0_0_8px_#0295E6]" />
+      )}
+
+      <div className="flex justify-between items-start mb-1">
+        <h4 className={`text-sm truncate pr-6 ${isUnread ? 'font-bold text-white' : 'font-medium text-gray-300'}`}>
+          {message.name || 'Anonymous'}
+        </h4>
+        <span className={`text-[10px] whitespace-nowrap ${isUnread ? 'text-[#0295E6]' : 'text-gray-500'}`}>
+          {getTimeDisplay(message.createdAt)}
         </span>
       </div>
-      
-      <p className="text-sm text-gray-300 line-clamp-2 mb-2 leading-relaxed">
+
+      <p className={`text-xs line-clamp-2 leading-relaxed mb-2 ${isUnread ? 'text-gray-300' : 'text-gray-500'}`}>
         {message.message}
       </p>
-      
-      <div className="flex items-center justify-between text-xs">
-        <div className="flex items-center gap-2 text-gray-500">
-          {message.phone && (
-            <span className="flex items-center gap-1" title="Phone">
-              <FaPhone />
-              {message.phone}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 text-gray-500">
-            <FaClock />
-            {formatDate(message.createdAt)}
+
+      <div className="flex items-center gap-3">
+        {/* Reply Status Icon */}
+        {isReplied ? (
+          <div className="flex items-center gap-1 text-[10px] text-green-400 bg-green-400/10 px-1.5 py-0.5 rounded">
+            <FaCheckDouble /> Replied
           </div>
-          {message.replies && message.replies.length > 0 && (
-            <span className="text-blue-400 flex items-center gap-1">
-              <FaReply />
-              {message.replies.length}
-            </span>
-          )}
-        </div>
+        ) : (
+          message.replies?.length > 0 && (
+             <div className="flex items-center gap-1 text-[10px] text-blue-400 bg-blue-400/10 px-1.5 py-0.5 rounded">
+               <FaReply /> {message.replies.length}
+             </div>
+          )
+        )}
       </div>
-    </motion.div>
+    </div>
   );
 }

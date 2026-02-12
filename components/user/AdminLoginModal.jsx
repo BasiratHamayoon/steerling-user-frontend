@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaEnvelope, FaLock, FaTimes, FaEye, FaEyeSlash, FaSpinner, FaExclamationCircle } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image'; // Import Image
 import { useAppContext } from '@/context/AppContext';
 
 export default function AdminLoginModal() {
@@ -102,12 +103,15 @@ export default function AdminLoginModal() {
                {/* Background noise texture optional */}
                <div className="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
                
-               {/* Logo Text - Angled */}
-               <div className="mb-2 transform -rotate-3 hover:rotate-0 transition-transform duration-500 ease-out inline-block origin-center">
-                  <h2 className="text-5xl font-black italic tracking-tighter drop-shadow-[0_0_15px_rgba(2,149,230,0.4)]">
-                    <span className="text-[#0295E6]">Steer</span>
-                    <span className="text-white">Flux</span>
-                  </h2>
+               {/* Logo Image */}
+               <div className="mb-4 relative h-16 w-full max-w-[200px] mx-auto">
+                  <Image 
+                    src="/logo.png" 
+                    alt="SteerFlux Logo" 
+                    fill
+                    className="object-contain"
+                    priority
+                  />
                </div>
                
                <div className="flex items-center justify-center gap-2 mt-2">
