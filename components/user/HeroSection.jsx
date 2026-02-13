@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence, useAnimation } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 
 const heroSlides = [
   {
     id: 1,
-    image: '/1.png',  
+    image: '/1.png',
     heading: 'Premium Steering Wheels Collection',
     blueWords: [0, 1],
     description: 'Crafted for precision and luxury driving experience'
@@ -25,30 +25,29 @@ export default function HeroSection() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isHovered, setIsHovered] = useState(false);
   const router = useRouter();
-  
+
   // In a real app, you would get the user from your auth context/state
-  // For demo purposes, I'll use a placeholder or you can pass it as a prop
   const currentUser = 'current-user'; // Replace with actual user from your auth system
 
   // Auto slide with pause on hover
   useEffect(() => {
     if (isHovered) return;
-    
+
     const interval = setInterval(() => {
       nextSlide();
     }, 5000);
-    
+
     return () => clearInterval(interval);
   }, [isHovered]);
 
   const nextSlide = useCallback(() => {
-    setCurrentSlide(prev => 
+    setCurrentSlide(prev =>
       prev === heroSlides.length - 1 ? 0 : prev + 1
     );
   }, []);
 
   const prevSlide = useCallback(() => {
-    setCurrentSlide(prev => 
+    setCurrentSlide(prev =>
       prev === 0 ? heroSlides.length - 1 : prev - 1
     );
   }, []);
@@ -56,24 +55,19 @@ export default function HeroSection() {
   // Handle Explore Collection button click
   const handleExploreClick = () => {
     if (currentUser) {
-      // Navigate to the products page with the user parameter
-      router.push(`/${currentUser}/products`);
+      // Navigate to the products page with the /app/[user]/products structure
+      router.push(`/user/products`);
     } else {
-      // If no user is available, you might want to:
-      // 1. Redirect to login page
-      // 2. Use a default user
-      // 3. Show an error message
       console.log('No user found. Please log in.');
-      // Example: router.push('/login');
-      // For now, we'll use a fallback
-      router.push('/guest/products');
+      // Fallback for guest
+      router.push('/user/products');
     }
   };
 
   // Render heading with blue words
   const renderHeading = (heading, blueWordIndices) => {
     const words = heading.split(' ');
-    
+
     return words.map((word, index) => (
       <motion.span
         key={index}
@@ -122,7 +116,7 @@ export default function HeroSection() {
   };
 
   return (
-    <div 
+    <div
       className="relative h-[70vh] md:h-[90vh] lg:h-screen overflow-hidden"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -130,7 +124,7 @@ export default function HeroSection() {
       {/* Background pattern overlay */}
       <div className="absolute inset-0 bg-gradient-to-br from-black/40 via-transparent to-black/30 z-10" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-transparent via-black/20 to-black/60 z-10" />
-      
+
       {/* Slide indicator dots */}
       <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-30 flex space-x-3">
         {heroSlides.map((_, index) => (
@@ -154,7 +148,7 @@ export default function HeroSection() {
               transition={{
                 repeat: index === currentSlide ? Infinity : 0,
                 repeatDelay: 0.5,
-                duration: 1.5
+                duration: 1.0
               }}
             />
           </button>
@@ -285,7 +279,7 @@ export default function HeroSection() {
                 {heroSlides[currentSlide].description}
               </motion.p>
               
-              {/* CTA Button - Now redirects to products page */}
+              {/* CTA Button */}
               <motion.button
                 onClick={handleExploreClick}
                 initial={{ opacity: 0, scale: 0.9 }}
@@ -296,12 +290,12 @@ export default function HeroSection() {
                   boxShadow: "0 0 30px rgba(2, 149, 230, 0.4)"
                 }}
                 whileTap={{ scale: 0.95 }}
-                className="px-8 py-3 bg-gradient-to-r from-[#0295E6] to-[#0278B8] text-white font-semibold rounded-full hover:shadow-xl transition-all duration-300 relative overflow-hidden group"
+                className="cursor-pointer px-6 py-2 text-sm sm:px-8 sm:py-3 sm:text-base bg-gradient-to-r from-[#0295E6] to-[#0278B8] text-white font-semibold rounded-full hover:shadow-xl transition-all duration-300 relative overflow-hidden group"
               >
                 <span className="relative z-10 flex items-center justify-center">
                   Explore Collection
                   <motion.svg
-                    className="ml-2 w-5 h-5"
+                    className="ml-2 w-4 h-4 sm:w-5 sm:h-5"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"

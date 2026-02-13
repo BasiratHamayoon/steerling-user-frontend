@@ -7,50 +7,43 @@ import AdminHeader from '@/components/admin/Header';
 import { useAppContext } from '@/context/AppContext';
 
 export default function AdminLayout({ children }) {
-  const router = useRouter();
+  const router = useRouter();                // ✅ FIX: call useRouter()
   const pathname = usePathname();
   const { isAuthenticated: contextAuth, authLoading, logout } = useAppContext();
-  
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    
     const checkAuth = () => {
       const accessToken = localStorage.getItem('accessToken');
       const admin = localStorage.getItem('admin');
-      
+
+      // ✅ FIX: redirect to /admin/login instead of '/'
       if ((!accessToken || !admin) && pathname !== '/admin/login') {
-        router.replace('/'); 
+        router.replace('/admin/login');
         return;
       }
-      
+
       if (accessToken && admin) {
         setIsAuthenticated(true);
       }
     };
 
-    
     const handleResize = () => {
       const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
-      
-      if (mobile) {
-        setIsSidebarOpen(false);
-      } else {
-        setIsSidebarOpen(true);
-      }
+      setIsSidebarOpen(!mobile);
     };
 
     checkAuth();
     handleResize();
-    
+
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, [router, pathname]);
 
-  
   useEffect(() => {
     if (!authLoading && contextAuth) {
       setIsAuthenticated(true);
@@ -58,9 +51,8 @@ export default function AdminLayout({ children }) {
   }, [contextAuth, authLoading]);
 
   const handleLogout = () => {
-    
     logout();
-    router.replace('/');
+    router.replace('/admin/login');
   };
 
   const toggleSidebar = () => {
@@ -77,27 +69,23 @@ export default function AdminLayout({ children }) {
 
   return (
     <div className="min-h-screen bg-gray-900">
-      <AdminHeader 
+      <AdminHeader
         onSidebarToggle={toggleSidebar}
         onLogout={handleLogout}
         isMobile={isMobile}
       />
-      
-      <AdminSidebar 
+      <AdminSidebar
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
         isMobile={isMobile}
       />
-      
-      <main 
+      <main
         className={`
           pt-18 transition-all duration-300
           ${isSidebarOpen && !isMobile ? 'md:ml-64' : ''}
         `}
       >
-        <div className="p-4 md:p-6">
-          {children}
-        </div>
+        <div className="p-4 md:p-6">{children}</div>
       </main>
     </div>
   );

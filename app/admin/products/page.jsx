@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { FaPlus, FaSearch, FaBox, FaTimes, FaSpinner } from 'react-icons/fa';
 import ProductModal from '@/components/admin/ProductModal';
+import ViewProductModal from '@/components/admin/ViewProductModal'; // Import the new modal
 import { useAppContext } from '@/context/AppContext';
 import TableRow from '@/components/admin/TableRow';
 import Loading from '@/components/ui/Loading';
@@ -25,15 +26,23 @@ export default function AdminProductsPage() {
     searchProducts
   } = useAppContext();
 
+  // Search & Filter State
   const [searchTerm, setSearchTerm] = useState('');
-  const [showAddModal, setShowAddModal] = useState(false);
-  const [selectedProduct, setSelectedProduct] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchResults, setSearchResults] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [productToDelete, setProductToDelete] = useState(null);
+  
+  // Modal States
+  const [showAddModal, setShowAddModal] = useState(false); // For Add/Edit
+  const [showViewModal, setShowViewModal] = useState(false); // For View
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false); // For Delete
+  
+  // Selected Product State
+  const [selectedProduct, setSelectedProduct] = useState(null); // Used for Add/Edit
+  const [productToView, setProductToView] = useState(null); // Used for View
+  const [productToDelete, setProductToDelete] = useState(null); // Used for Delete
+
   const searchRef = useRef(null);
 
   useEffect(() => {
@@ -144,7 +153,11 @@ export default function AdminProductsPage() {
     setProductToDelete(null);
   };
 
-  const handleViewProduct = (product) => router.push(`/user/products/${product._id}`);
+  // --- CHANGED: Use Modal instead of Routing ---
+  const handleViewProduct = (product) => {
+    setProductToView(product);
+    setShowViewModal(true);
+  };
   
   const handleEditProduct = (product) => {
     const selectedCategory = categories.find(cat => cat._id === product.category?._id);
@@ -201,7 +214,7 @@ export default function AdminProductsPage() {
           </button>
         </form>
 
-        {/* Suggestions Dropdown - ✅ Shows newly created products because they now exist in DB */}
+        {/* Suggestions Dropdown */}
         {showSuggestions && (
           <div className="absolute top-full left-0 right-0 mt-2 bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl z-50 overflow-hidden">
             {searchLoading ? (
@@ -292,6 +305,7 @@ export default function AdminProductsPage() {
         )}
       </div>
 
+      {/* Add/Edit Modal */}
       {showAddModal && (
         <ProductModal
           isOpen={showAddModal}
@@ -301,6 +315,16 @@ export default function AdminProductsPage() {
         />
       )}
 
+      {/* View Product Modal (New) */}
+      {showViewModal && (
+        <ViewProductModal
+          isOpen={showViewModal}
+          onClose={() => { setShowViewModal(false); setProductToView(null); }}
+          product={productToView}
+        />
+      )}
+
+      {/* Delete Confirmation */}
       <ConfirmationModal
         isOpen={deleteModalOpen}
         onClose={() => setDeleteModalOpen(false)}

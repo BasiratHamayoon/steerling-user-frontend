@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation'; // ✅ added useRouter
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FaTachometerAlt,
@@ -11,9 +11,8 @@ import {
   FaCog,
   FaTimes,
   FaSignOutAlt,
-  FaStore
 } from 'react-icons/fa';
-import Image from 'next/image';
+import { useAppContext } from '@/context/AppContext'; // ✅ import context
 
 const menuItems = [
   { name: 'Dashboard', href: '/admin/dashboard', icon: <FaTachometerAlt /> },
@@ -25,17 +24,16 @@ const menuItems = [
 
 export default function AdminSidebar({ isOpen, onClose, isMobile }) {
   const pathname = usePathname();
+  const router = useRouter();               
+  const { logout } = useAppContext();        
 
   const handleLogout = () => {
-    localStorage.removeItem('adminAuth');
-    localStorage.removeItem('adminUser');
-    window.location.href = '/user';
+    logout();                               
+    router.push('/user');             
   };
 
-  // On mobile, sidebar should overlay, on desktop it should be fixed below the header
   return (
     <>
-      {/* Mobile backdrop */}
       <AnimatePresence>
         {isMobile && isOpen && (
           <motion.div
@@ -48,11 +46,10 @@ export default function AdminSidebar({ isOpen, onClose, isMobile }) {
         )}
       </AnimatePresence>
 
-      {/* Sidebar */}
       <AnimatePresence mode="wait">
         {(!isMobile || isOpen) && (
           <motion.aside
-            key={isMobile ? "mobile-sidebar" : "desktop-sidebar"}
+            key={isMobile ? 'mobile-sidebar' : 'desktop-sidebar'}
             initial={isMobile ? { x: -280 } : false}
             animate={isMobile ? { x: 0 } : false}
             exit={{ x: -280 }}
@@ -60,19 +57,15 @@ export default function AdminSidebar({ isOpen, onClose, isMobile }) {
           >
             <div className="h-full flex flex-col">
               {/* Header */}
-              <div className="">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3"> 
-                  </div>
-                  {isMobile && (
-                    <button
-                      onClick={onClose}
-                      className="p-2 hover:bg-gray-800/50 rounded-lg transition-colors text-gray-400 hover:text-white"
-                    >
-                      <FaTimes />
-                    </button>
-                  )}
-                </div>
+              <div className="flex items-center justify-between p-4">
+                {isMobile && (
+                  <button
+                    onClick={onClose}
+                    className="p-2 hover:bg-gray-800/50 rounded-lg transition-colors text-gray-400 hover:text-white"
+                  >
+                    <FaTimes />
+                  </button>
+                )}
               </div>
 
               {/* Menu Items */}

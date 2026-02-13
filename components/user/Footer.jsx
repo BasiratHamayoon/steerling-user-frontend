@@ -8,7 +8,8 @@ export default function Footer() {
       {/* Top Gradient Line for a glowing border effect */}
       <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-[#0295E6] to-transparent opacity-60"></div>
 
-      <div className="container mx-auto px-6 py-16">
+      {/* CHANGED: Changed py-16 to pt-16 pb-6 to reduce bottom padding */}
+      <div className="container mx-auto px-6 pt-16 pb-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-8 items-start">
           
           {/* 1. Brand Section */}
@@ -77,7 +78,8 @@ export default function Footer() {
         </div>
 
         {/* Copyright Section */}
-        <div className="mt-16 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
+        {/* CHANGED: Changed mt-16 to mt-8 to bring the bottom section up */}
+        <div className="mt-8 pt-8 border-t border-gray-800 flex flex-col md:flex-row justify-between items-center text-sm text-gray-500">
           <p>&copy; {new Date().getFullYear()} SteerFlux. All rights reserved.</p>
           <p className="mt-2 md:mt-0 opacity-75">Premium Quality Guaranteed</p>
         </div>

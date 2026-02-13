@@ -41,7 +41,7 @@ export default function Filters({ onFilterChange, productsPerRow, setProductsPer
   // Helper to display price label nicely
   const getPriceLabel = () => {
     if (priceRange.min === DEFAULT_MIN && priceRange.max === DEFAULT_MAX) {
-      return "Any Price";
+      return "Any";
     }
     return `$${priceRange.min} - $${priceRange.max}`;
   };
@@ -54,48 +54,48 @@ export default function Filters({ onFilterChange, productsPerRow, setProductsPer
   ];
 
   const availabilityOptions = [
-    { value: 'all', label: 'All Products' },
+    { value: 'all', label: 'All' },
     { value: 'in-stock', label: 'In Stock' },
     { value: 'out-of-stock', label: 'Out of Stock' },
   ];
 
   const viewOptions = [
-    { value: 2, icon: <FiGrid className="text-lg" />, label: '2 per row' },
-    { value: 3, icon: <FiGrid className="text-lg" />, label: '3 per row' },
-    { value: 4, icon: <FiGrid className="text-lg" />, label: '4 per row' },
+    { value: 2, icon: <FiGrid className="text-sm" />, label: '2 per row' },
+    { value: 3, icon: <FiGrid className="text-sm" />, label: '3 per row' },
+    { value: 4, icon: <FiGrid className="text-sm" />, label: '4 per row' },
   ];
 
-  // Animation variants for dropdowns
+  // Animation variants
   const dropdownVariants = {
-    hidden: { opacity: 0, y: -10, scale: 0.95 },
-    visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.2, ease: "easeOut" } },
-    exit: { opacity: 0, y: -10, scale: 0.95, transition: { duration: 0.15, ease: "easeIn" } }
+    hidden: { opacity: 0, y: -4, scale: 0.98 },
+    visible: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.15, ease: "easeOut" } },
+    exit: { opacity: 0, y: -4, scale: 0.98, transition: { duration: 0.1, ease: "easeIn" } }
   };
 
-  // Shared trigger style
+  // Shared trigger style - REDUCED HEIGHT (h-10) and PADDING
   const triggerStyle = `
-    flex items-center justify-between w-full md:min-w-[180px] gap-3 
-    bg-gray-900 border border-gray-700 rounded-xl
-    text-gray-300 text-sm py-3 px-4 cursor-pointer 
+    flex items-center justify-between w-full md:min-w-[160px] gap-2 
+    bg-gray-900 border border-gray-700 rounded-lg
+    text-gray-300 text-xs sm:text-sm h-10 px-3 cursor-pointer 
     hover:border-[#0295E6]/50 hover:bg-gray-800 transition-all duration-300 group select-none relative
   `;
 
   return (
     <motion.div
       ref={filterRef}
-      initial={{ opacity: 0, y: -20 }}
+      initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
-      className="w-full mb-10 pb-6 border-b border-gray-800"
+      className="w-full mb-8"
     >
-      <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-6">
+      <div className="flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4">
         
         {/* Left Side: Filter Controls */}
-        <div className="flex flex-col gap-4 w-full xl:w-auto">
+        <div className="flex flex-col gap-3 w-full xl:w-auto">
           
-          <div className="flex flex-col sm:flex-row flex-wrap gap-4 relative">
+          <div className="flex flex-col sm:flex-row flex-wrap gap-3 relative">
             
-            {/* Filter Icon Label (Desktop) */}
-            <div className="hidden xl:flex items-center justify-center w-12 h-12 rounded-xl bg-gray-900 border border-gray-800 text-[#0295E6]">
+            {/* Filter Icon Label (Desktop) - Adjusted to h-10 w-10 */}
+            <div className="hidden xl:flex items-center justify-center w-10 h-10 rounded-lg bg-gray-900 border border-gray-800 text-[#0295E6] text-sm shadow-sm">
                <FaFilter />
             </div>
 
@@ -105,13 +105,13 @@ export default function Filters({ onFilterChange, productsPerRow, setProductsPer
                 onClick={() => toggleDropdown('availability')}
                 className={`${triggerStyle} ${activeDropdown === 'availability' ? 'border-[#0295E6] ring-1 ring-[#0295E6]/20' : ''}`}
               >
-                <div className="flex flex-col items-start">
-                   <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-0.5">Availability</span>
+                <div className="flex items-center gap-2 overflow-hidden">
+                   <span className="text-gray-500 font-medium whitespace-nowrap">Status:</span>
                    <span className="truncate font-medium text-white">
                       {availabilityOptions.find(o => o.value === availability)?.label}
                    </span>
                 </div>
-                <FaChevronDown className={`text-xs text-gray-500 transition-transform duration-300 ${activeDropdown === 'availability' ? 'rotate-180 text-[#0295E6]' : ''}`} />
+                <FaChevronDown className={`text-[10px] text-gray-500 transition-transform duration-300 ${activeDropdown === 'availability' ? 'rotate-180 text-[#0295E6]' : ''}`} />
               </div>
 
               <AnimatePresence>
@@ -119,7 +119,7 @@ export default function Filters({ onFilterChange, productsPerRow, setProductsPer
                   <motion.div
                     variants={dropdownVariants}
                     initial="hidden" animate="visible" exit="exit"
-                    className="absolute top-full left-0 mt-2 w-full min-w-[200px] bg-gray-900 border border-gray-700 rounded-xl shadow-2xl overflow-hidden z-50 ring-1 ring-black/50"
+                    className="absolute top-full left-0 mt-1 w-full min-w-[160px] bg-gray-900 border border-gray-700 rounded-lg shadow-xl overflow-hidden z-50 ring-1 ring-black/50"
                   >
                     {availabilityOptions.map((option) => (
                       <div
@@ -129,13 +129,13 @@ export default function Filters({ onFilterChange, productsPerRow, setProductsPer
                           setActiveDropdown(null);
                         }}
                         className={`
-                          px-4 py-3 text-sm cursor-pointer flex items-center justify-between
-                          hover:bg-gray-800 transition-colors border-b border-gray-800 last:border-0
+                          px-3 py-2 text-xs cursor-pointer flex items-center justify-between
+                          hover:bg-gray-800 transition-colors border-b border-gray-800/50 last:border-0
                           ${availability === option.value ? 'text-[#0295E6] bg-gray-800/50' : 'text-gray-300'}
                         `}
                       >
                         {option.label}
-                        {availability === option.value && <FaCheck className="text-xs" />}
+                        {availability === option.value && <FaCheck className="text-[10px]" />}
                       </div>
                     ))}
                   </motion.div>
@@ -143,19 +143,19 @@ export default function Filters({ onFilterChange, productsPerRow, setProductsPer
               </AnimatePresence>
             </div>
 
-            {/* 2. PRICE RANGE CUSTOM POPOVER */}
+            {/* 2. PRICE RANGE DROPDOWN */}
             <div className="relative flex-1 sm:flex-none">
               <div 
                 onClick={() => toggleDropdown('price')}
                 className={`${triggerStyle} ${activeDropdown === 'price' ? 'border-[#0295E6] ring-1 ring-[#0295E6]/20' : ''}`}
               >
-                <div className="flex flex-col items-start">
-                   <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-0.5">Price Range</span>
-                   <span className="truncate font-medium text-white font-mono">
+                <div className="flex items-center gap-2 overflow-hidden">
+                   <span className="text-gray-500 font-medium whitespace-nowrap">Price:</span>
+                   <span className="truncate font-medium text-white font-mono text-xs">
                       {getPriceLabel()}
                    </span>
                 </div>
-                <FaChevronDown className={`text-xs text-gray-500 transition-transform duration-300 ${activeDropdown === 'price' ? 'rotate-180 text-[#0295E6]' : ''}`} />
+                <FaChevronDown className={`text-[10px] text-gray-500 transition-transform duration-300 ${activeDropdown === 'price' ? 'rotate-180 text-[#0295E6]' : ''}`} />
               </div>
 
               <AnimatePresence>
@@ -163,49 +163,46 @@ export default function Filters({ onFilterChange, productsPerRow, setProductsPer
                   <motion.div
                     variants={dropdownVariants}
                     initial="hidden" animate="visible" exit="exit"
-                    className="absolute top-full left-0 mt-2 w-full sm:w-72 bg-gray-900 border border-gray-700 rounded-xl shadow-2xl p-5 z-50 ring-1 ring-black/50"
+                    className="absolute top-full left-0 mt-1 w-full sm:w-64 bg-gray-900 border border-gray-700 rounded-lg shadow-xl p-4 z-50 ring-1 ring-black/50"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2">
                       <div className="flex-1">
-                        <label className="text-[10px] text-gray-500 uppercase font-bold mb-2 block">Min Price</label>
+                        <label className="text-[10px] text-gray-500 uppercase font-bold mb-1 block">Min</label>
                         <div className="relative">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">$</span>
+                          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500 text-xs">$</span>
                           <input
                             type="number"
                             placeholder="0"
                             value={priceRange.min === 0 ? '' : priceRange.min}
                             onChange={(e) => setPriceRange({ ...priceRange, min: Number(e.target.value) })}
-                            className="w-full bg-gray-950 border border-gray-700 rounded-lg py-2.5 pl-7 pr-3 text-sm text-white focus:outline-none focus:border-[#0295E6] focus:ring-1 focus:ring-[#0295E6] transition-all placeholder-gray-700"
+                            className="w-full bg-gray-950 border border-gray-700 rounded-md py-1.5 pl-5 pr-2 text-xs text-white focus:outline-none focus:border-[#0295E6] transition-all placeholder-gray-700"
                           />
                         </div>
                       </div>
-                      <span className="text-gray-600 mt-6">-</span>
+                      <span className="text-gray-600 mt-4">-</span>
                       <div className="flex-1">
-                        <label className="text-[10px] text-gray-500 uppercase font-bold mb-2 block">Max Price</label>
+                        <label className="text-[10px] text-gray-500 uppercase font-bold mb-1 block">Max</label>
                         <div className="relative">
-                          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">$</span>
+                          <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-500 text-xs">$</span>
                           <input
                             type="number"
                             placeholder="10k+"
                             value={priceRange.max === DEFAULT_MAX ? '' : priceRange.max}
                             onChange={(e) => setPriceRange({ ...priceRange, max: e.target.value === '' ? DEFAULT_MAX : Number(e.target.value) })}
-                            className="w-full bg-gray-950 border border-gray-700 rounded-lg py-2.5 pl-7 pr-3 text-sm text-white focus:outline-none focus:border-[#0295E6] focus:ring-1 focus:ring-[#0295E6] transition-all placeholder-gray-700"
+                            className="w-full bg-gray-950 border border-gray-700 rounded-md py-1.5 pl-5 pr-2 text-xs text-white focus:outline-none focus:border-[#0295E6] transition-all placeholder-gray-700"
                           />
                         </div>
                       </div>
                     </div>
-                    <div className="mt-4 pt-3 border-t border-gray-800 flex justify-between items-center">
-                        <span className="text-xs text-gray-500">
-                           {priceRange.min === DEFAULT_MIN && priceRange.max === DEFAULT_MAX ? 'Showing all prices' : 'Custom range active'}
-                        </span>
+                    <div className="mt-3 pt-2 border-t border-gray-800 flex justify-end">
                         <button 
                             onClick={() => {
                                 setPriceRange({ min: DEFAULT_MIN, max: DEFAULT_MAX });
                                 setActiveDropdown(null);
                             }}
-                            className="text-xs text-[#0295E6] hover:text-white transition-colors"
+                            className="text-[10px] text-[#0295E6] hover:text-white transition-colors font-medium"
                         >
-                            Reset
+                            Reset Range
                         </button>
                     </div>
                   </motion.div>
@@ -219,18 +216,14 @@ export default function Filters({ onFilterChange, productsPerRow, setProductsPer
                 onClick={() => toggleDropdown('sort')}
                 className={`${triggerStyle} ${activeDropdown === 'sort' ? 'border-[#0295E6] ring-1 ring-[#0295E6]/20' : ''}`}
               >
-                <div className="flex flex-col items-start overflow-hidden">
-                   <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-0.5">Sort By</span>
-                   <div className="flex items-center gap-2">
-                       <span className="text-gray-400 text-xs">
-                         {sortOptions.find(o => o.value === sortBy)?.icon}
-                       </span>
-                       <span className="truncate font-medium text-white">
-                         {sortOptions.find(o => o.value === sortBy)?.label}
-                       </span>
-                   </div>
+                <div className="flex items-center gap-2 overflow-hidden">
+                   <span className="text-gray-500 font-medium whitespace-nowrap">Sort:</span>
+                   <span className="truncate font-medium text-white flex items-center gap-1.5">
+                     {sortOptions.find(o => o.value === sortBy)?.icon}
+                     {sortOptions.find(o => o.value === sortBy)?.label}
+                   </span>
                 </div>
-                <FaChevronDown className={`text-xs text-gray-500 transition-transform duration-300 ${activeDropdown === 'sort' ? 'rotate-180 text-[#0295E6]' : ''}`} />
+                <FaChevronDown className={`text-[10px] text-gray-500 transition-transform duration-300 ${activeDropdown === 'sort' ? 'rotate-180 text-[#0295E6]' : ''}`} />
               </div>
 
               <AnimatePresence>
@@ -238,7 +231,7 @@ export default function Filters({ onFilterChange, productsPerRow, setProductsPer
                   <motion.div
                     variants={dropdownVariants}
                     initial="hidden" animate="visible" exit="exit"
-                    className="absolute top-full left-0 mt-2 w-full min-w-[220px] bg-gray-900 border border-gray-700 rounded-xl shadow-2xl overflow-hidden z-50 ring-1 ring-black/50"
+                    className="absolute top-full left-0 mt-1 w-full min-w-[200px] bg-gray-900 border border-gray-700 rounded-lg shadow-xl overflow-hidden z-50 ring-1 ring-black/50"
                   >
                     {sortOptions.map((option) => (
                       <div
@@ -248,8 +241,8 @@ export default function Filters({ onFilterChange, productsPerRow, setProductsPer
                           setActiveDropdown(null);
                         }}
                         className={`
-                          px-4 py-3 text-sm cursor-pointer flex items-center gap-3
-                          hover:bg-gray-800 transition-colors border-b border-gray-800 last:border-0
+                          px-3 py-2.5 text-xs cursor-pointer flex items-center gap-2
+                          hover:bg-gray-800 transition-colors border-b border-gray-800/50 last:border-0
                           ${sortBy === option.value ? 'bg-gray-800/50' : ''}
                         `}
                       >
@@ -259,7 +252,7 @@ export default function Filters({ onFilterChange, productsPerRow, setProductsPer
                         <span className={`flex-1 ${sortBy === option.value ? 'text-[#0295E6] font-medium' : 'text-gray-300'}`}>
                           {option.label}
                         </span>
-                        {sortBy === option.value && <FaCheck className="text-xs text-[#0295E6]" />}
+                        {sortBy === option.value && <FaCheck className="text-[10px] text-[#0295E6]" />}
                       </div>
                     ))}
                   </motion.div>
@@ -270,15 +263,15 @@ export default function Filters({ onFilterChange, productsPerRow, setProductsPer
           </div>
         </div>
 
-        {/* Right Side: View Toggle (Hidden on small screens) */}
-        <div className="hidden xl:flex flex-col items-end gap-1">
-          <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Grid Layout</span>
-          <div className="flex items-center bg-gray-900 rounded-xl p-1 border border-gray-700">
+        {/* Right Side: View Toggle - Compacted to match h-10 */}
+        <div className="hidden xl:flex items-center gap-3">
+          <span className="text-[10px] text-gray-500 uppercase font-bold tracking-wider">Layout</span>
+          <div className="flex items-center bg-gray-900 rounded-lg p-1 border border-gray-700 h-10">
             {viewOptions.map(option => (
               <button
                 key={option.value}
                 onClick={() => setProductsPerRow(option.value)}
-                className={`p-2.5 rounded-lg transition-all duration-300 ${
+                className={`h-full px-3 rounded-md transition-all duration-300 flex items-center justify-center ${
                   productsPerRow === option.value 
                     ? 'bg-gray-800 text-[#0295E6] shadow-sm' 
                     : 'text-gray-600 hover:text-gray-300 hover:bg-gray-800/50'

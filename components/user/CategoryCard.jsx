@@ -134,7 +134,8 @@ export default function CategoryCard({ category, index }) {
         initial="hidden"
         animate="visible"
         whileHover="hover"
-        className="group relative h-[420px] w-full overflow-hidden rounded-3xl bg-gray-900 cursor-pointer shadow-xl"
+        // Changed height from h-[420px] to h-[340px]
+        className="group relative h-[340px] w-full overflow-hidden rounded-3xl bg-gray-900 cursor-pointer shadow-xl"
       >
         {/* --- Background Image --- */}
         <div className="absolute inset-0 overflow-hidden">

@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import authService from '@/services/authService';
 import categoryService from '@/services/categoryService';
 import productService from '@/services/productService';
@@ -208,28 +208,20 @@ export function AppProvider({ children }) {
     }
   };
 
-  // --- MODIFIED fetchCategories: Added default limit and sort ---
   const fetchCategories = useCallback(async (params = {}) => {
-    console.log('=== fetchCategories called ==='); 
-    console.log('Params:', params);
-    
     try {
       setCategoriesLoading(true);
       setError(null);
 
-      // Default behavior: fetch all (or pagination defaults), active ones
-      // If you want "Recent 4" specifically for the home page, the component should pass { limit: 4, sort: 'createdAt' }
       const response = await categoryService.getAll(params);
 
       if (response.success) {
-        console.log('Setting categories:', response.data.categories); 
         setCategories(response.data.categories);
         setCategoriesPagination(response.data.pagination);
       }
 
       return response;
     } catch (error) {
-      console.error('fetchCategories ERROR:', error); 
       const message = error.response?.data?.message || error.message || 'Failed to fetch categories';
       setError(message);
       return { success: false, error: message };
@@ -709,7 +701,8 @@ export function AppProvider({ children }) {
   const clearError = () => setError(null);
   const clearNotification = () => setNotification(null);
 
-  const value = {
+  // FIX: Wrapped value in useMemo to prevent unnecessary re-renders of consumers
+  const value = useMemo(() => ({
     searchQuery, setSearchQuery, cart, isSearchOpen, setIsSearchOpen, 
     isAdminLoginOpen, setIsAdminLoginOpen, fetchDashboardStats, fetchRecentMessages,
     addToCart, removeFromCart, updateCartQuantity, clearCart, getCartTotal, getCartItemsCount,
@@ -723,7 +716,14 @@ export function AppProvider({ children }) {
     messages, messagesLoading, messagesPagination, unreadMessagesCount,
     sendMessage, fetchMessages, fetchMessageById, replyToMessage, updateMessageStatus,
     archiveMessage, deleteMessage, bulkUpdateMessages, fetchMessageStats,
-  };
+  }), [
+    searchQuery, cart, isSearchOpen, isAdminLoginOpen, admin, isAuthenticated, authLoading,
+    categories, categoriesLoading, categoriesPagination,
+    products, productsLoading, productsPagination,
+    messages, messagesLoading, messagesPagination, unreadMessagesCount,
+    error, notification,
+    fetchCategories, fetchProducts, fetchMessages, searchProducts // These are useCallback'd
+  ]);
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }
