@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { FaEnvelope, FaLock, FaTimes, FaEye, FaEyeSlash, FaSpinner, FaExclamationCircle } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
-import Image from 'next/image'; // Import Image
+import Image from 'next/image';
 import { useAppContext } from '@/context/AppContext';
 
 export default function AdminLoginModal() {
@@ -45,7 +45,7 @@ export default function AdminLoginModal() {
       } else {
         setError(result.error || 'Invalid email or password');
         setIsShaking(true);
-        setTimeout(() => setIsShaking(false), 500); // Reset shake
+        setTimeout(() => setIsShaking(false), 500);
       }
     } catch (err) {
       setError('An error occurred. Please try again.');
@@ -128,7 +128,11 @@ export default function AdminLoginModal() {
                 className="space-y-5" 
                 noValidate
                 animate={isShaking ? { x: [-10, 10, -10, 10, 0] } : {}}
-                transition={{ type: "spring", stiffness: 500, damping: 20 }}
+                transition={{ 
+                  type: "tween",
+                  duration: 0.4,
+                  ease: "easeInOut"
+                }}
               >
                 {/* Email Field */}
                 <div className="space-y-1.5 group">
