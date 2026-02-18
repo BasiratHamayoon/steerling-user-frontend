@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation'; // ✅ added useRouter
+import { usePathname, useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   FaTachometerAlt,
@@ -11,13 +11,15 @@ import {
   FaCog,
   FaTimes,
   FaSignOutAlt,
+  FaStar, // Add this import
 } from 'react-icons/fa';
-import { useAppContext } from '@/context/AppContext'; // ✅ import context
+import { useAppContext } from '@/context/AppContext';
 
 const menuItems = [
   { name: 'Dashboard', href: '/admin/dashboard', icon: <FaTachometerAlt /> },
   { name: 'Products', href: '/admin/products', icon: <FaBox /> },
   { name: 'Categories', href: '/admin/categories', icon: <FaTags /> },
+  { name: 'Reviews', href: '/admin/reviews', icon: <FaStar /> }, // Add this line
   { name: 'Messages', href: '/admin/messages', icon: <FaEnvelope /> },
   { name: 'Settings', href: '/admin/settings', icon: <FaCog /> },
 ];

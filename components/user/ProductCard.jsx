@@ -2,27 +2,47 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { FaWhatsapp, FaEye } from 'react-icons/fa';
+import { FaWhatsapp, FaEye, FaStar, FaStarHalfAlt, FaRegStar } from 'react-icons/fa';
 import getImageUrl from '@/utils/imageUrl';
 
 export default function ProductCard({ product, onOrder }) {
-  // Safe Accessors to prevent crashes if data is missing
+  // Safe Accessors
   const productId = product._id || product.id;
   const productName = product.title || product.name || 'Untitled Product';
   const productModel = product.model || product.brand || 'Premium';
   
-  // Check stock status (support various backend naming conventions)
   const isInStock = product.stockStatus === 'inStock' || product.inStock === true || product.quantity > 0;
-  
-  // Ensure price is a number
   const productPrice = parseFloat(product.price) || 0;
   
-  // Get Image or Placeholder
+  // Get rating from product.ratings object
+  const averageRating = product.ratings?.average || 0;
+  const totalReviews = product.ratings?.total || 0;
+  
+  // Image
   const rawImage = product.images?.[0] || product.image;
   const displayImage = rawImage ? getImageUrl(rawImage) : '/placeholder-product.jpg';
 
-  // Safely get category name
+  // Category name
   const categoryName = typeof product.category === 'object' ? product.category?.name : null;
+
+  // Rating stars component
+  const RatingStars = ({ rating }) => {
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+
+    return (
+      <div className="flex items-center gap-0.5">
+        {[...Array(fullStars)].map((_, i) => (
+          <FaStar key={`full-${i}`} className="text-yellow-400 text-[10px]" />
+        ))}
+        {hasHalfStar && <FaStarHalfAlt className="text-yellow-400 text-[10px]" />}
+        {[...Array(emptyStars)].map((_, i) => (
+          <FaRegStar key={`empty-${i}`} className="text-gray-600 text-[10px]" />
+        ))}
+      </div>
+    );
+  };
 
   return (
     <motion.div
@@ -32,7 +52,7 @@ export default function ProductCard({ product, onOrder }) {
       whileHover={{ y: -5 }}
       className="group relative bg-gray-900 rounded-2xl overflow-hidden border border-gray-800 hover:border-[#0295E6]/50 shadow-lg hover:shadow-[#0295E6]/20 transition-all duration-300 flex flex-col h-full"
     >
-      {/* 1. Image Section - Fixed Height */}
+      {/* Image Section */}
       <div className="relative h-56 sm:h-64 w-full bg-gray-950 overflow-hidden shrink-0">
         <Link href={`/user/products/${productId}`} className="block w-full h-full">
             <img
@@ -41,7 +61,7 @@ export default function ProductCard({ product, onOrder }) {
               className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
               onError={(e) => {
                 e.target.onerror = null;
-                e.target.src = '/placeholder-product.jpg'; // Ensure you have this image in /public
+                e.target.src = '/placeholder-product.jpg';
               }}
             />
             
@@ -73,7 +93,7 @@ export default function ProductCard({ product, onOrder }) {
         </Link>
       </div>
 
-      {/* 2. Content Section - Fills remaining height */}
+      {/* Content Section */}
       <div className="p-4 flex flex-col flex-grow relative z-10">
         <div className="mb-auto">
           <Link href={`/user/products/${productId}`}>
@@ -81,9 +101,21 @@ export default function ProductCard({ product, onOrder }) {
               {productName}
             </h3>
           </Link>
-          <p className="text-gray-500 text-xs mb-3 font-medium tracking-wide uppercase line-clamp-1">
+          <p className="text-gray-500 text-xs mb-2 font-medium tracking-wide uppercase line-clamp-1">
             {productModel}
           </p>
+          
+          {/* Rating Display */}
+          {totalReviews > 0 ? (
+            <div className="flex items-center gap-2 mb-2">
+              <RatingStars rating={averageRating} />
+              <span className="text-[10px] text-gray-500">
+                ({totalReviews})
+              </span>
+            </div>
+          ) : (
+            <p className="text-[10px] text-gray-600 mb-2">No reviews yet</p>
+          )}
         </div>
 
         {/* Price & Action */}
